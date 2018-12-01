@@ -1,20 +1,20 @@
 [![crates.io](https://img.shields.io/crates/d/cortex-a.svg)](https://crates.io/crates/cortex-a)
 [![crates.io](https://img.shields.io/crates/v/cortex-a.svg)](https://crates.io/crates/cortex-a)
 
-# cortex-a
+# aarch64
 
-Low level access to Cortex-A processors
+Low level access to Cortex-A 64-bit processors
 
 ## Usage
 
 Example from https://github.com/andre-richter/rust-raspi3-tutorial
 
 ```rust
-extern crate cortex_a;
+extern crate aarch64;
 
 #[no_mangle]
 pub unsafe extern "C" fn _boot_cores() -> ! {
-    use cortex_a::{asm, regs::*};
+    use aarch64::{asm, regs::*};
 
     const CORE_MASK: u64 = 0x3;
     const STACK_START: u64 = 0x80_000;
