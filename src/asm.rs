@@ -13,6 +13,7 @@
  * Author(s):
  *   - Jorge Aparicio
  *   - Andre Richter <andre.o.richter@gmail.com>
+ *   - Yuekai Jia <equation618@gmail.com>
  */
 
 //! Miscellaneous assembly instructions and functions

@@ -8,19 +8,16 @@
 //! If you want to contribute, feel free to reach out!
 
 #![no_std]
-//#![deny(warnings)]
 #![feature(asm)]
 #![feature(const_fn)]
 #![feature(core_intrinsics)]
 #![feature(try_from)]
 
-extern crate bare_metal;
 #[macro_use]
 extern crate register;
 #[macro_use]
 extern crate bitflags;
 extern crate bit_field;
-extern crate os_bootinfo;
 extern crate usize_conversions;
 
 /// Provides the non-standard-width integer types `u2`–`u63`.

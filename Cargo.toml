@@ -18,8 +18,6 @@ register = "0.2.0"
 bit_field = "0.9.0"
 bitflags = "1.0.1"
 usize_conversions = "0.2.0"
-os_bootinfo = "0.2.0"
-bare-metal = "0.2.0"
 
 [dependencies.ux]
 default-features = false
