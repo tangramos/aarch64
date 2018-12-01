@@ -1,12 +1,12 @@
 [package]
-name = "cortex-a"
+name = "aarch64"
 version = "2.2.2"
-authors = ["Andre Richter <andre.o.richter@gmail.com>"]
+authors = ["Andre Richter <andre.o.richter@gmail.com>", "koumingyang <1761674434@qq.com>", "Yuekai Jia <equation618@gmail.com>"]
 description = "Low level access to Cortex-A processors"
-homepage = "https://github.com/rust-embedded/cortex-a"
-repository = "https://github.com/rust-embedded/cortex-a"
+homepage = "https://github.com/equation314/aarch64"
+repository = "https://github.com/equation314/aarch64"
 readme = "README.md"
-keywords = ["arm", "aarch64", "cortex-a", "register"]
+keywords = ["arm", "aarch64", "cortex-a", "register", "paging"]
 categories = ["embedded", "hardware-support", "no-std"]
 license = "MIT/Apache-2.0"
 exclude = [
@@ -15,3 +15,12 @@ exclude = [
 
 [dependencies]
 register = "0.2.0"
+bit_field = "0.9.0"
+bitflags = "1.0.1"
+usize_conversions = "0.2.0"
+os_bootinfo = "0.2.0"
+bare-metal = "0.2.0"
+
+[dependencies.ux]
+default-features = false
+version = "0.1.0"
