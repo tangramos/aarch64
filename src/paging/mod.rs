@@ -18,7 +18,7 @@ mod frame_alloc;
 mod page_table;
 mod recursive;
 
-/// Trait for abstracting over the three possible page sizes on x86_64, 4KiB, 2MiB, 1GiB.
+/// Trait for abstracting over the three possible block/page sizes on aarch64, 4KiB, 2MiB, 1GiB.
 pub trait PageSize: Copy + Eq + PartialOrd + Ord {
     /// The page size in bytes.
     const SIZE: u64;
@@ -39,8 +39,6 @@ pub enum Size4KiB {}
 pub enum Size2MiB {}
 
 /// A “giant” 1GiB page.
-///
-/// (Only available on newer x86_64 CPUs.)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Size1GiB {}
 
@@ -118,6 +116,14 @@ impl<S: PageSize> Page<S> {
     /// Returns a range of pages, inclusive `end`.
     pub fn range_inclusive(start: Self, end: Self) -> PageRangeInclusive<S> {
         PageRangeInclusive { start, end }
+    }
+
+    pub fn of_addr(address: usize) -> Self {
+        Self::containing_address(VirtAddr::new(address as u64))
+    }
+
+    pub fn range_of(begin: usize, end: usize) -> PageRange<S> {
+        Self::range(Page::of_addr(begin), Page::of_addr(end - 1) + 1)
     }
 }
 
@@ -350,6 +356,10 @@ impl<S: PageSize> PhysFrame<S> {
     /// Returns a range of frames, inclusive `end`.
     pub fn range_inclusive(start: PhysFrame<S>, end: PhysFrame<S>) -> PhysFrameRangeInclusive<S> {
         PhysFrameRangeInclusive { start, end }
+    }
+
+    pub fn of_addr(address: usize) -> Self {
+        Self::containing_address(PhysAddr::new(address as u64))
     }
 }
 

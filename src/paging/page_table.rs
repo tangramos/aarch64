@@ -42,7 +42,7 @@ impl PageTableEntry {
 
     /// Returns the physical address mapped by this entry, might be zero.
     pub fn addr(&self) -> PhysAddr {
-        PhysAddr::new(self.entry & 0x000fffff_fffff000)
+        PhysAddr::new(self.entry & 0x0000_ffff_ffff_f000)
     }
 
     /// Returns the physical frame mapped by this entry.
@@ -83,6 +83,7 @@ impl PageTableEntry {
 impl fmt::Debug for PageTableEntry {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut f = f.debug_struct("PageTableEntry");
+        f.field("value", &self.entry);
         f.field("addr", &self.addr());
         f.field("flags", &self.flags());
         f.finish()
@@ -94,9 +95,11 @@ bitflags! {
     pub struct PageTableFlags: u64 {
         const ALL =             0xffffffff_ffffffff;
         const TYPE_MASK =       3 << 0;
-        const TYPE_FAULT =      0 << 0;
+        // const TYPE_FAULT =      0 << 0;
         const TYPE_PAGE =       3 << 0;
         const TABLE_BIT =       1 << 1;
+        // const BLOCK_BIT =       0 << 1;
+        const PAGE_BIT =        1 << 1;
 
         const PRESENT =         1 << 0;
         const USER_ACCESSIBLE = 1 << 6;         /* AP[1] */
@@ -104,11 +107,10 @@ bitflags! {
         const SHARED =          3 << 8;         /* SH[1:0], inner shareable */
         const BIT_8 =           1 << 8;
         const BIT_9 =           1 << 9;
-        /*
-            pub const ATTRIB_SH_NON_SHAREABLE: usize = 0x0 << 8;
-            pub const ATTRIB_SH_OUTER_SHAREABLE: usize = 0x2 << 8;
-            pub const ATTRIB_SH_INNER_SHAREABLE: usize = 0x3 << 8;
-        */
+
+        // pub const ATTRIB_SH_NON_SHAREABLE: usize = 0x0 << 8;
+        const OUTER_SHAREABLE = 0b10 << 8;
+        const INNER_SHAREABLE = 0b11 << 8;
 
         const ACCESSED =        1 << 10;        /* AF, Access Flag */
         const NONE_GLOBAL =     1 << 11;        /* None Global */
