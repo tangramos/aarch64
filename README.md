@@ -3,7 +3,9 @@
 
 # aarch64
 
-Low level access to Cortex-A 64-bit processors
+Low level access to Cortex-A 64-bit processors.
+
+Used by [RustOS](https://github.com/wangrunji0408/RustOS).
 
 ## Usage
 
