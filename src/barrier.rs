@@ -51,13 +51,23 @@ macro_rules! dmb_dsb {
     };
 }
 
+// Full system
 pub struct SY;
+pub struct ST;
+pub struct LD;
+
+// Inner Shareable
 pub struct ISH;
 pub struct ISHST;
+pub struct ISHLD;
 
 dmb_dsb!(SY);
+dmb_dsb!(ST);
+dmb_dsb!(LD);
+
 dmb_dsb!(ISH);
 dmb_dsb!(ISHST);
+dmb_dsb!(ISHLD);
 
 impl sealed::Isb for SY {
     #[inline(always)]
@@ -88,4 +98,16 @@ where
     A: sealed::Isb,
 {
     arg.__isb()
+}
+
+/// Write memory barrier
+#[inline(always)]
+pub unsafe fn wmb() {
+    dsb(ST)
+}
+
+/// Read memory barrier
+#[inline(always)]
+pub unsafe fn rmb() {
+    dsb(LD)
 }
