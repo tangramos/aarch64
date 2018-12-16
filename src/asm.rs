@@ -18,8 +18,8 @@
 
 //! Miscellaneous assembly instructions and functions
 
-use paging::PhysFrame;
 use addr::{PhysAddr, VirtAddr};
+use paging::PhysFrame;
 use regs::*;
 
 /// Returns the current stack pointer.
@@ -27,7 +27,7 @@ use regs::*;
 pub fn sp() -> *const u8 {
     let ptr: usize;
     unsafe {
-        asm!("mov $0, sp" : "=r"(ptr));
+        asm!("mov $0, sp" : "=r"(ptr) ::: "volatile");
     }
 
     ptr as *const u8
@@ -37,7 +37,7 @@ pub fn sp() -> *const u8 {
 #[inline(always)]
 pub unsafe fn get_pc() -> usize {
     let pc: usize;
-    asm!("adr $0, ." : "=r"(pc));
+    asm!("adr $0, ." : "=r"(pc) ::: "volatile");
     pc
 }
 
@@ -83,13 +83,11 @@ pub fn wfe() {
 /// therefore never return.
 #[inline]
 pub fn eret() -> ! {
-    use core;
-
     match () {
         #[cfg(target_arch = "aarch64")]
         () => unsafe {
             asm!("eret" :::: "volatile");
-            core::intrinsics::unreachable()
+            unreachable!()
         },
 
         #[cfg(not(target_arch = "aarch64"))]
@@ -106,6 +104,7 @@ pub fn tlb_invalidate_all() {
              tlbi vmalle1is
              dsb ish
              isb"
+            :::: "volatile"
         );
     }
 }
@@ -118,7 +117,9 @@ pub fn tlb_invalidate(vaddr: VirtAddr) {
             "dsb ishst
              tlbi vaae1is, $0
              dsb ish
-             isb" :: "r"(vaddr.as_u64() >> 12)
+             isb"
+            :: "r"(vaddr.as_u64() >> 12)
+            :: "volatile"
         );
     }
 }
@@ -131,7 +132,29 @@ pub fn flush_icache_all() {
             "ic ialluis
              dsb ish
              isb"
+            :::: "volatile"
         );
+    }
+}
+
+/// Clean and Invalidate data cache by address to Point of Coherency.
+#[inline(always)]
+pub fn flush_dcache_line(vaddr: usize) {
+    unsafe {
+        asm!("dc civac, $0" :: "r"(vaddr) :: "volatile");
+    }
+}
+
+/// Clean and Invalidate data cache by address range to Point of Coherency.
+pub fn flush_dcache_range(start: usize, end: usize) {
+    let line_size = 4 << CTR_EL0.read(CTR_EL0::DminLine);
+    let mut addr = start & !(line_size - 1);
+    while addr < end {
+        flush_dcache_line(addr);
+        addr += line_size;
+    }
+    unsafe {
+        asm!("dsb sy; isb" :::: "volatile");
     }
 }
 
@@ -140,7 +163,13 @@ pub fn flush_icache_all() {
 pub fn address_translate(vaddr: usize) -> usize {
     let paddr: usize;
     unsafe {
-        asm!("at S1E1R, $1; mrs $0, par_el1" : "=r"(paddr) : "r"(vaddr));
+        asm!(
+            "at S1E1R, $1
+             mrs $0, par_el1"
+            : "=r"(paddr)
+            : "r"(vaddr)
+            :: "volatile"
+        );
     }
     paddr
 }
