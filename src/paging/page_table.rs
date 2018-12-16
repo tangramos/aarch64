@@ -11,12 +11,12 @@ use register::FieldValue;
 use register::cpu::RegisterReadWrite;
 
 /// Memory attribute fields mask
-const MEMORY_ATTR_MASK: u64 = (MEMORY_ATTRIBUTE::SH.mask << MEMORY_ATTRIBUTE::SH.shift)
+pub const MEMORY_ATTR_MASK: u64 = (MEMORY_ATTRIBUTE::SH.mask << MEMORY_ATTRIBUTE::SH.shift)
     | (MEMORY_ATTRIBUTE::AttrIndx.mask << MEMORY_ATTRIBUTE::AttrIndx.shift);
 /// Output address mask
-const ADDR_MASK: u64 = 0x0000_ffff_ffff_f000;
+pub const ADDR_MASK: u64 = 0x0000_ffff_ffff_f000;
 /// Other flags mask
-const FLAGS_MASK: u64 = !(MEMORY_ATTR_MASK | ADDR_MASK);
+pub const FLAGS_MASK: u64 = !(MEMORY_ATTR_MASK | ADDR_MASK);
 
 /// Memory attribute fields
 pub type PageTableAttribute = FieldValue<u64, MEMORY_ATTRIBUTE::Register>;
@@ -78,7 +78,7 @@ impl PageTableEntry {
     /// Returns the memory attribute fields of this entry.
     #[inline]
     pub fn attr(&self) -> PageTableAttribute {
-        PageTableAttribute::new(MEMORY_ATTR_MASK, 0, self.entry & MEMORY_ATTR_MASK)
+        PageTableAttribute::new(MEMORY_ATTR_MASK, 0, self.entry)
     }
 
     /// Returns the physical frame mapped by this entry.
@@ -124,7 +124,7 @@ impl PageTableEntry {
         self.entry = (self.entry & !FLAGS_MASK) | flags.bits();
     }
 
-    /// Sets the flags of this entry.
+    /// Sets the memory attribute of this entry.
     pub fn modify_attr(&mut self, attr: PageTableAttribute) {
         self.entry = (self.entry & !MEMORY_ATTR_MASK) | attr.value;
     }
