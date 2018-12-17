@@ -182,7 +182,7 @@ bitflags! {
         /// Privileged Execute-never
         const PXN =             1 << 53;
         /// Execute-never/Unprivileged execute-never
-        const XN =              1 << 54;
+        const UXN =             1 << 54;
 
         /// Software Dirty Bit Modifier
         const WRITE =           1 << 51;
@@ -205,7 +205,7 @@ bitflags! {
 impl Default for PageTableFlags {
     #[inline]
     fn default() -> Self {
-        Self::VALID | Self::TABLE_OR_PAGE | Self::AF | Self::WRITE | Self::PXN | Self::XN
+        Self::VALID | Self::TABLE_OR_PAGE | Self::AF | Self::WRITE | Self::PXN | Self::UXN
     }
 }
 
