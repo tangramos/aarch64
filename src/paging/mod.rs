@@ -2,6 +2,8 @@
 //!
 //! Page tables translate virtual memory “pages” to physical memory “frames”.
 
+#![allow(non_upper_case_globals)]
+
 pub use self::frame_alloc::*;
 pub use self::page_table::*;
 #[cfg(target_arch = "aarch64")]
@@ -99,7 +101,7 @@ impl<S: PageSize> Page<S> {
         S::SIZE
     }
 
-    /// Returns the level 4 page table index of this page.
+    /// Returns the top 16 bits.
     pub fn va_range_bits(&self) -> u16 {
         self.start_address().va_range_bits()
     }
@@ -124,11 +126,11 @@ impl<S: PageSize> Page<S> {
         PageRangeInclusive { start, end }
     }
 
-    pub fn of_addr(address: usize) -> Self {
-        Self::containing_address(VirtAddr::new(address as u64))
+    pub fn of_addr(address: u64) -> Self {
+        Self::containing_address(VirtAddr::new(address))
     }
 
-    pub fn range_of(begin: usize, end: usize) -> PageRange<S> {
+    pub fn range_of(begin: u64, end: u64) -> PageRange<S> {
         Self::range(Page::of_addr(begin), Page::of_addr(end - 1) + 1)
     }
 }
@@ -364,11 +366,11 @@ impl<S: PageSize> PhysFrame<S> {
         PhysFrameRangeInclusive { start, end }
     }
 
-    pub fn of_addr(address: usize) -> Self {
-        Self::containing_address(PhysAddr::new(address as u64))
+    pub fn of_addr(address: u64) -> Self {
+        Self::containing_address(PhysAddr::new(address))
     }
 
-    pub fn range_of(begin: usize, end: usize) -> PhysFrameRange<S> {
+    pub fn range_of(begin: u64, end: u64) -> PhysFrameRange<S> {
         Self::range(Self::of_addr(begin), Self::of_addr(end - 1) + 1)
     }
 }

@@ -27,6 +27,7 @@ pub extern crate ux;
 
 pub use addr::{align_down, align_up, PhysAddr, VirtAddr};
 
+#[cfg(target_arch = "aarch64")]
 pub mod asm;
 pub mod addr;
 pub mod paging;

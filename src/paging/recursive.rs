@@ -151,7 +151,8 @@ impl<'a> RecursivePageTable<'a> {
     ///   itself.
     ///     - The reference must use that “loop”, i.e. be of the form `0o_xxx_xxx_xxx_xxx_0000`
     ///       where `xxx` is the recursive entry.
-    /// - The page table must be active, i.e. the CR3 register must contain its physical address.
+    /// - The page table must be active, i.e. the TTBRx_EL1 register must contain its physical
+    ///   address.
     ///
     /// Otherwise `Err(NotRecursivelyMapped)` is returned.
     pub fn new(table: &'a mut PageTable) -> Result<Self, NotRecursivelyMapped> {

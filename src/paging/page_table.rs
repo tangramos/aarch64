@@ -81,6 +81,12 @@ impl PageTableEntry {
         PageTableAttribute::new(MEMORY_ATTR_MASK, 0, self.entry)
     }
 
+    /// Returns whether this entry is mapped to a block.
+    #[inline]
+    pub fn is_block(&self) -> bool {
+        !self.flags().contains(PageTableFlags::TABLE_OR_PAGE)
+    }
+
     /// Returns the physical frame mapped by this entry.
     ///
     /// Returns the following errors:
@@ -91,7 +97,7 @@ impl PageTableEntry {
     pub fn frame(&self) -> Result<PhysFrame, FrameError> {
         if !self.flags().contains(PageTableFlags::VALID) {
             Err(FrameError::FrameNotPresent)
-        } else if !self.flags().contains(PageTableFlags::TABLE_OR_PAGE) {
+        } else if self.is_block() {
             // is a huge page (block)
             Err(FrameError::HugeFrame)
         } else {
