@@ -13,7 +13,7 @@ use core::fmt;
 use core::marker::PhantomData;
 use core::ops::{Add, AddAssign, Sub, SubAssign};
 use ux::*;
-use addr::{PhysAddr, VirtAddr};
+use addr::{PhysAddr, VirtAddr, VirtAddrRange};
 
 mod frame_alloc;
 mod page_table;
@@ -144,10 +144,10 @@ impl<S: NotGiantPageSize> Page<S> {
 
 impl Page<Size1GiB> {
     /// Returns the 1GiB memory page with the specified page table indices.
-    pub fn from_page_table_indices_1gib(p4_index: u9, p3_index: u9) -> Self {
+    pub fn from_page_table_indices_1gib(va_range: VirtAddrRange, p4_index: u9, p3_index: u9) -> Self {
         use bit_field::BitField;
 
-        let mut addr = 0;
+        let mut addr = va_range.as_offset();
         addr.set_bits(39..48, u64::from(p4_index));
         addr.set_bits(30..39, u64::from(p3_index));
         Page::containing_address(VirtAddr::new(addr))
@@ -156,10 +156,10 @@ impl Page<Size1GiB> {
 
 impl Page<Size2MiB> {
     /// Returns the 2MiB memory page with the specified page table indices.
-    pub fn from_page_table_indices_2mib(p4_index: u9, p3_index: u9, p2_index: u9) -> Self {
+    pub fn from_page_table_indices_2mib(va_range: VirtAddrRange, p4_index: u9, p3_index: u9, p2_index: u9) -> Self {
         use bit_field::BitField;
 
-        let mut addr = 0;
+        let mut addr = va_range.as_offset();
         addr.set_bits(39..48, u64::from(p4_index));
         addr.set_bits(30..39, u64::from(p3_index));
         addr.set_bits(21..30, u64::from(p2_index));
@@ -169,10 +169,10 @@ impl Page<Size2MiB> {
 
 impl Page<Size4KiB> {
     /// Returns the 4KiB memory page with the specified page table indices.
-    pub fn from_page_table_indices(p4_index: u9, p3_index: u9, p2_index: u9, p1_index: u9) -> Self {
+    pub fn from_page_table_indices(va_range: VirtAddrRange, p4_index: u9, p3_index: u9, p2_index: u9, p1_index: u9) -> Self {
         use bit_field::BitField;
 
-        let mut addr = 0;
+        let mut addr = va_range.as_offset();
         addr.set_bits(39..48, u64::from(p4_index));
         addr.set_bits(30..39, u64::from(p3_index));
         addr.set_bits(21..30, u64::from(p2_index));

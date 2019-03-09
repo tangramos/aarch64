@@ -6,13 +6,23 @@ use bit_field::BitField;
 use usize_conversions::FromUsize;
 use ux::*;
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 #[repr(u8)]
 pub enum VirtAddrRange {
     /// 0x0000000000000000 to 0x0000FFFFFFFFFFFF
     BottomRange = 0,
     /// 0xFFFF000000000000 to 0xFFFFFFFFFFFFFFFF.
     TopRange = 1,
+}
+
+impl VirtAddrRange {
+    /// Returns the address offset
+    pub fn as_offset(&self) -> u64 {
+        match self {
+            VirtAddrRange::BottomRange => 0,
+            VirtAddrRange::TopRange => 0xFFFF_0000_0000_0000,
+        }
+    }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]

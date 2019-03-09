@@ -9,7 +9,7 @@ use paging::{page_table::PageTableFlags as Flags, PageTableAttribute, memory_att
 use asm::{ttbr_el1_read, tlb_invalidate};
 use barrier;
 use ux::u9;
-use addr::{PhysAddr, VirtAddr};
+use addr::{PhysAddr, VirtAddr, VirtAddrRange};
 
 /// This type represents a page whose mapping has changed in the page table.
 ///
@@ -102,6 +102,7 @@ pub trait Mapper<S: PageSize> {
 pub struct RecursivePageTable<'a> {
     p4: &'a mut PageTable,
     recursive_index: u9,
+    va_range: VirtAddrRange,
 }
 
 /// An error indicating that the given page table is not recursively mapped.
@@ -158,6 +159,7 @@ impl<'a> RecursivePageTable<'a> {
     pub fn new(table: &'a mut PageTable) -> Result<Self, NotRecursivelyMapped> {
         let page = Page::containing_address(VirtAddr::new(table as *const _ as u64));
         let recursive_index = page.p4_index();
+        let va_range = page.start_address().va_range().unwrap();
 
         if page.p3_index() != recursive_index
             || page.p2_index() != recursive_index
@@ -165,7 +167,7 @@ impl<'a> RecursivePageTable<'a> {
         {
             return Err(NotRecursivelyMapped);
         }
-        if Ok(ttbr_el1_read(page.start_address().va_range().unwrap() as u8)) !=
+        if Ok(ttbr_el1_read(va_range as u8)) !=
             table[recursive_index].frame()
         {
             return Err(NotRecursivelyMapped);
@@ -174,6 +176,7 @@ impl<'a> RecursivePageTable<'a> {
         Ok(RecursivePageTable {
             p4: table,
             recursive_index,
+            va_range,
         })
     }
 
@@ -181,9 +184,11 @@ impl<'a> RecursivePageTable<'a> {
     ///
     /// The `recursive_index` parameter must be the index of the recursively mapped entry.
     pub unsafe fn new_unchecked(table: &'a mut PageTable, recursive_index: u9) -> Self {
+        let vaddr = VirtAddr::new(table as *const _ as u64);
         RecursivePageTable {
             p4: table,
             recursive_index,
+            va_range: vaddr.va_range().unwrap(),
         }
     }
 
@@ -260,6 +265,7 @@ impl<'a> RecursivePageTable<'a> {
 
     fn p3_page<S: PageSize>(&self, page: Page<S>) -> Page {
         Page::from_page_table_indices(
+            self.va_range,
             self.recursive_index,
             self.recursive_index,
             self.recursive_index,
@@ -269,6 +275,7 @@ impl<'a> RecursivePageTable<'a> {
 
     fn p2_page<S: NotGiantPageSize>(&self, page: Page<S>) -> Page {
         Page::from_page_table_indices(
+            self.va_range,
             self.recursive_index,
             self.recursive_index,
             page.p4_index(),
@@ -278,6 +285,7 @@ impl<'a> RecursivePageTable<'a> {
 
     fn p1_page(&self, page: Page<Size4KiB>) -> Page {
         Page::from_page_table_indices(
+            self.va_range,
             self.recursive_index,
             page.p4_index(),
             page.p3_index(),
