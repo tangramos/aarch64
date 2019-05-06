@@ -13,7 +13,7 @@ use core::fmt;
 use core::marker::PhantomData;
 use core::ops::{Add, AddAssign, Sub, SubAssign};
 use ux::*;
-use addr::{PhysAddr, VirtAddr, VirtAddrRange};
+use addr::{PhysAddr, VirtAddr, VirtAddrRange, VirtAddrNotValid};
 
 mod frame_alloc;
 mod page_table;
@@ -101,9 +101,9 @@ impl<S: PageSize> Page<S> {
         S::SIZE
     }
 
-    /// Returns the top 16 bits.
-    pub fn va_range_bits(&self) -> u16 {
-        self.start_address().va_range_bits()
+    /// Returns the VA range
+    pub fn va_range(&self) -> Result<VirtAddrRange, VirtAddrNotValid> {
+        self.start_address().va_range()
     }
 
     /// Returns the level 4 page table index of this page.

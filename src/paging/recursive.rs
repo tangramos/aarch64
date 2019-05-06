@@ -6,10 +6,10 @@ use paging::{
     NotGiantPageSize, Page, PageSize, PhysFrame, Size4KiB,
 };
 use paging::{page_table::PageTableFlags as Flags, PageTableAttribute, memory_attribute::*};
-use asm::{ttbr_el1_read, tlb_invalidate};
+use asm::tlb_invalidate;
 use barrier;
 use ux::u9;
-use addr::{PhysAddr, VirtAddr, VirtAddrRange};
+use addr::{PhysAddr, VirtAddr};
 
 /// This type represents a page whose mapping has changed in the page table.
 ///
@@ -99,10 +99,8 @@ pub trait Mapper<S: PageSize> {
 ///
 /// This struct implements the `Mapper` trait.
 #[derive(Debug)]
-pub struct RecursivePageTable<'a> {
-    p4: &'a mut PageTable,
+pub struct RecursivePageTable {
     recursive_index: u9,
-    va_range: VirtAddrRange,
 }
 
 /// An error indicating that the given page table is not recursively mapped.
@@ -143,52 +141,13 @@ pub enum FlagUpdateError {
     PageNotMapped,
 }
 
-impl<'a> RecursivePageTable<'a> {
-    /// Creates a new RecursivePageTable from the passed level 4 PageTable.
-    ///
-    /// The page table must be recursively mapped, that means:
-    ///
-    /// - The page table must have one recursive entry, i.e. an entry that points to the table
-    ///   itself.
-    ///     - The reference must use that “loop”, i.e. be of the form `0o_xxx_xxx_xxx_xxx_0000`
-    ///       where `xxx` is the recursive entry.
-    /// - The page table must be active, i.e. the TTBRx_EL1 register must contain its physical
-    ///   address.
-    ///
-    /// Otherwise `Err(NotRecursivelyMapped)` is returned.
-    pub fn new(table: &'a mut PageTable) -> Result<Self, NotRecursivelyMapped> {
-        let page = Page::containing_address(VirtAddr::new(table as *const _ as u64));
-        let recursive_index = page.p4_index();
-        let va_range = page.start_address().va_range().unwrap();
-
-        if page.p3_index() != recursive_index
-            || page.p2_index() != recursive_index
-            || page.p1_index() != recursive_index
-        {
-            return Err(NotRecursivelyMapped);
-        }
-        if Ok(ttbr_el1_read(va_range as u8)) !=
-            table[recursive_index].frame()
-        {
-            return Err(NotRecursivelyMapped);
-        }
-
-        Ok(RecursivePageTable {
-            p4: table,
-            recursive_index,
-            va_range,
-        })
-    }
-
+impl RecursivePageTable {
     /// Creates a new RecursivePageTable without performing any checks.
     ///
     /// The `recursive_index` parameter must be the index of the recursively mapped entry.
-    pub unsafe fn new_unchecked(table: &'a mut PageTable, recursive_index: u9) -> Self {
-        let vaddr = VirtAddr::new(table as *const _ as u64);
+    pub fn new(recursive_index: u16) -> Self {
         RecursivePageTable {
-            p4: table,
-            recursive_index,
-            va_range: vaddr.va_range().unwrap(),
+            recursive_index: u9::new(recursive_index),
         }
     }
 
@@ -251,21 +210,35 @@ impl<'a> RecursivePageTable<'a> {
         inner(entry, next_table_page, allocator)
     }
 
-    pub fn p3_ptr<S: PageSize>(&self, page: Page<S>) -> *mut PageTable {
+    fn p4_ptr<S: PageSize>(&self, page: Page<S>) -> *mut PageTable {
+        self.p4_page(page).start_address().as_mut_ptr()
+    }
+
+    fn p3_ptr<S: PageSize>(&self, page: Page<S>) -> *mut PageTable {
         self.p3_page(page).start_address().as_mut_ptr()
     }
 
-    pub fn p2_ptr<S: NotGiantPageSize>(&self, page: Page<S>) -> *mut PageTable {
+    fn p2_ptr<S: NotGiantPageSize>(&self, page: Page<S>) -> *mut PageTable {
         self.p2_page(page).start_address().as_mut_ptr()
     }
 
-    pub fn p1_ptr(&self, page: Page<Size4KiB>) -> *mut PageTable {
+    fn p1_ptr(&self, page: Page<Size4KiB>) -> *mut PageTable {
         self.p1_page(page).start_address().as_mut_ptr()
+    }
+
+    fn p4_page<S: PageSize>(&self, page: Page<S>) -> Page {
+        Page::from_page_table_indices(
+            page.va_range().unwrap(),
+            self.recursive_index,
+            self.recursive_index,
+            self.recursive_index,
+            self.recursive_index,
+        )
     }
 
     fn p3_page<S: PageSize>(&self, page: Page<S>) -> Page {
         Page::from_page_table_indices(
-            self.va_range,
+            page.va_range().unwrap(),
             self.recursive_index,
             self.recursive_index,
             self.recursive_index,
@@ -275,7 +248,7 @@ impl<'a> RecursivePageTable<'a> {
 
     fn p2_page<S: NotGiantPageSize>(&self, page: Page<S>) -> Page {
         Page::from_page_table_indices(
-            self.va_range,
+            page.va_range().unwrap(),
             self.recursive_index,
             self.recursive_index,
             page.p4_index(),
@@ -285,7 +258,7 @@ impl<'a> RecursivePageTable<'a> {
 
     fn p1_page(&self, page: Page<Size4KiB>) -> Page {
         Page::from_page_table_indices(
-            self.va_range,
+            page.va_range().unwrap(),
             self.recursive_index,
             page.p4_index(),
             page.p3_index(),
@@ -294,7 +267,7 @@ impl<'a> RecursivePageTable<'a> {
     }
 }
 
-impl<'a> Mapper<Size4KiB> for RecursivePageTable<'a> {
+impl Mapper<Size4KiB> for RecursivePageTable {
     fn map_to<A>(
         &mut self,
         page: Page<Size4KiB>,
@@ -306,8 +279,7 @@ impl<'a> Mapper<Size4KiB> for RecursivePageTable<'a> {
     where
         A: FrameAllocator<Size4KiB>,
     {
-        let self_mut = unsafe { &mut *(self as *const _ as *mut Self) };
-        let p4 = &mut self_mut.p4;
+        let p4 = unsafe { &mut *(self.p4_ptr(page)) };
 
         let p3_page = self.p3_page(page);
         let p3 = unsafe { Self::create_next_table(&mut p4[page.p4_index()], p3_page, allocator)? };
@@ -330,8 +302,7 @@ impl<'a> Mapper<Size4KiB> for RecursivePageTable<'a> {
         &mut self,
         page: Page<Size4KiB>,
     ) -> Result<(PhysFrame<Size4KiB>, MapperFlush<Size4KiB>), UnmapError> {
-        let self_mut = unsafe { &mut *(self as *const _ as *mut Self) };
-        let p4 = &mut self_mut.p4;
+        let p4 = unsafe { &mut *(self.p4_ptr(page)) };
 
         let p4_entry = &p4[page.p4_index()];
         p4_entry.frame().map_err(|err| match err {
@@ -370,8 +341,7 @@ impl<'a> Mapper<Size4KiB> for RecursivePageTable<'a> {
         page: Page<Size4KiB>,
         flags: PageTableFlags,
     ) -> Result<MapperFlush<Size4KiB>, FlagUpdateError> {
-        let self_mut = unsafe { &mut *(self as *const _ as *mut Self) };
-        let p4 = &mut self_mut.p4;
+        let p4 = unsafe { &mut *(self.p4_ptr(page)) };
 
         if p4[page.p4_index()].is_unused() {
             return Err(FlagUpdateError::PageNotMapped);
@@ -401,8 +371,7 @@ impl<'a> Mapper<Size4KiB> for RecursivePageTable<'a> {
     }
 
     fn translate_page(&self, page: Page<Size4KiB>) -> Option<PhysFrame<Size4KiB>> {
-        let self_mut = unsafe { &mut *(self as *const _ as *mut Self) };
-        let p4 = &mut self_mut.p4;
+        let p4 = unsafe { &mut *(self.p4_ptr(page)) };
 
         if p4[page.p4_index()].is_unused() {
             return None;

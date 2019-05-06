@@ -11,7 +11,6 @@
 #![feature(asm)]
 #![feature(const_fn)]
 #![feature(core_intrinsics)]
-#![feature(try_from)]
 
 #[macro_use]
 extern crate register;
