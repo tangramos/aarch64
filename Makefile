@@ -6,5 +6,8 @@ default:
 clippy:
 	cargo xclippy --target $(TARGET)
 
+fmt:
+	cargo fmt
+
 clean:
 	cargo clean
