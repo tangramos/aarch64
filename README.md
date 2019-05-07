@@ -5,7 +5,7 @@
 
 Low level access to Cortex-A 64-bit processors.
 
-Used by [rCore](https://github.com/wangrunji0408/rCore).
+Used by [rCore](https://github.com/rcore-os/rCore).
 
 ## Usage
 

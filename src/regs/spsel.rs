@@ -36,7 +36,6 @@ register_bitfields! {u32,
     ]
 }
 
-
 pub struct Reg;
 
 impl RegisterReadWrite<u32, SPSel::Register> for Reg {

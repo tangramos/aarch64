@@ -79,7 +79,6 @@ register_bitfields! {u32,
     ]
 }
 
-
 pub struct Reg;
 
 impl RegisterReadWrite<u32, DAIF::Register> for Reg {

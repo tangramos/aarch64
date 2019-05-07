@@ -42,16 +42,14 @@ impl VirtAddr {
     /// This function performs sign extension of bit 47 to make the address canonical. Panics
     /// if the bits in the range 48 to 64 contain data (i.e. are not null and no sign extension).
     pub fn new(addr: u64) -> VirtAddr {
-        Self::try_new(addr).expect(
-            "invalid virtual address",
-        )
+        Self::try_new(addr).expect("invalid virtual address")
     }
 
     /// Tries to create a new canonical virtual address.
     /// in aarch64, valid virtual address starts with 0x0000 or 0xffff.
     pub fn try_new(addr: u64) -> Result<VirtAddr, VirtAddrNotValid> {
         match addr.get_bits(48..64) {
-            0 | 0xffff => Ok(VirtAddr(addr)),      // address is canonical
+            0 | 0xffff => Ok(VirtAddr(addr)), // address is canonical
             other => Err(VirtAddrNotValid(other)),
         }
     }

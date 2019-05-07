@@ -9,11 +9,11 @@ pub use self::page_table::*;
 #[cfg(target_arch = "aarch64")]
 pub use self::recursive::*;
 
+use addr::{PhysAddr, VirtAddr, VirtAddrNotValid, VirtAddrRange};
 use core::fmt;
 use core::marker::PhantomData;
 use core::ops::{Add, AddAssign, Sub, SubAssign};
 use ux::*;
-use addr::{PhysAddr, VirtAddr, VirtAddrRange, VirtAddrNotValid};
 
 mod frame_alloc;
 mod page_table;
@@ -144,7 +144,11 @@ impl<S: NotGiantPageSize> Page<S> {
 
 impl Page<Size1GiB> {
     /// Returns the 1GiB memory page with the specified page table indices.
-    pub fn from_page_table_indices_1gib(va_range: VirtAddrRange, p4_index: u9, p3_index: u9) -> Self {
+    pub fn from_page_table_indices_1gib(
+        va_range: VirtAddrRange,
+        p4_index: u9,
+        p3_index: u9,
+    ) -> Self {
         use bit_field::BitField;
 
         let mut addr = va_range.as_offset();
@@ -156,7 +160,12 @@ impl Page<Size1GiB> {
 
 impl Page<Size2MiB> {
     /// Returns the 2MiB memory page with the specified page table indices.
-    pub fn from_page_table_indices_2mib(va_range: VirtAddrRange, p4_index: u9, p3_index: u9, p2_index: u9) -> Self {
+    pub fn from_page_table_indices_2mib(
+        va_range: VirtAddrRange,
+        p4_index: u9,
+        p3_index: u9,
+        p2_index: u9,
+    ) -> Self {
         use bit_field::BitField;
 
         let mut addr = va_range.as_offset();
@@ -169,7 +178,13 @@ impl Page<Size2MiB> {
 
 impl Page<Size4KiB> {
     /// Returns the 4KiB memory page with the specified page table indices.
-    pub fn from_page_table_indices(va_range: VirtAddrRange, p4_index: u9, p3_index: u9, p2_index: u9, p1_index: u9) -> Self {
+    pub fn from_page_table_indices(
+        va_range: VirtAddrRange,
+        p4_index: u9,
+        p3_index: u9,
+        p2_index: u9,
+        p1_index: u9,
+    ) -> Self {
         use bit_field::BitField;
 
         let mut addr = va_range.as_offset();

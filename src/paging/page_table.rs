@@ -1,14 +1,14 @@
 use core::fmt;
 use core::ops::{Index, IndexMut};
 
-use super::{PhysFrame, PageSize};
+use super::{PageSize, PhysFrame};
 use addr::PhysAddr;
 
 use usize_conversions::usize_from;
 use ux::*;
 
-use register::FieldValue;
 use register::cpu::RegisterReadWrite;
+use register::FieldValue;
 
 /// Memory attribute fields mask
 pub const MEMORY_ATTR_MASK: u64 = (MEMORY_ATTRIBUTE::SH.mask << MEMORY_ATTRIBUTE::SH.shift)
@@ -114,7 +114,12 @@ impl PageTableEntry {
 
     /// The descriptor gives the base address of a block of memory, and the attributes for that
     /// memory region.
-    pub fn set_block<S: PageSize>(&mut self, addr: PhysAddr, flags: PageTableFlags, attr: PageTableAttribute) {
+    pub fn set_block<S: PageSize>(
+        &mut self,
+        addr: PhysAddr,
+        flags: PageTableFlags,
+        attr: PageTableAttribute,
+    ) {
         // is a block
         assert!(!flags.contains(PageTableFlags::TABLE_OR_PAGE));
         self.set(addr.align_down(S::SIZE).as_u64() | flags.bits() | attr.value);
