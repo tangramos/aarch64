@@ -54,7 +54,8 @@ pub struct VirtAddrNotValid(u64);
 impl VirtAddr {
     /// Creates a new canonical virtual address.
     pub fn new(addr: u64) -> VirtAddr {
-        Self::try_new(addr).expect("invalid virtual address")
+        // Self::try_new(addr).expect("invalid virtual address")
+        VirtAddr(addr)
     }
 
     /// Tries to create a new canonical virtual address.
@@ -242,11 +243,7 @@ impl PhysAddr {
     ///
     /// Panics if a bit in the range 52 to 64 is set.
     pub fn new(addr: u64) -> PhysAddr {
-        assert_eq!(
-            addr.get_bits(52..64),
-            0,
-            "physical addresses must not have any bits in the range 52 to 64 set"
-        );
+        // Self::try_new(addr).expect("physical addresses must not have any bits in the range 52 to 64 set")
         PhysAddr(addr)
     }
 
@@ -393,7 +390,7 @@ impl Sub<PhysAddr> for PhysAddr {
 /// Returns the greatest x with alignment `align` so that x <= addr. The alignment must be
 ///  a power of 2.
 pub fn align_down(addr: u64, align: u64) -> u64 {
-    assert!(align.is_power_of_two(), "`align` must be a power of two");
+    debug_assert!(align.is_power_of_two(), "`align` must be a power of two");
     addr & !(align - 1)
 }
 
@@ -402,7 +399,7 @@ pub fn align_down(addr: u64, align: u64) -> u64 {
 /// Returns the smallest x with alignment `align` so that x >= addr. The alignment must be
 /// a power of 2.
 pub fn align_up(addr: u64, align: u64) -> u64 {
-    assert!(align.is_power_of_two(), "`align` must be a power of two");
+    debug_assert!(align.is_power_of_two(), "`align` must be a power of two");
     let align_mask = align - 1;
     if addr & align_mask == 0 {
         addr // already aligned

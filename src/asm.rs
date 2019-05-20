@@ -115,9 +115,8 @@ pub fn tlb_invalidate(vaddr: VirtAddr) {
     unsafe {
         asm!(
             "dsb ishst
-             tlbi vaae1is, $0
-             dsb ish
-             isb"
+             tlbi vaale1is, $0
+             dsb ish"
             :: "r"(vaddr.as_u64() >> 12)
             :: "volatile"
         );

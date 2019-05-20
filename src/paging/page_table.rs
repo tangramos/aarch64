@@ -108,14 +108,14 @@ impl PageTableEntry {
 
     /// Map the entry to the specified physical address with the specified flags and memory attribute.
     pub fn set_addr(&mut self, addr: PhysAddr, flags: PageTableFlags, attr: PageTableAttribute) {
-        assert!(addr.is_aligned(Size4KiB::SIZE));
+        debug_assert!(addr.is_aligned(Size4KiB::SIZE));
         self.entry = (addr.as_u64()) | flags.bits() | attr.value;
     }
 
     /// Map the entry to the specified physical frame with the specified flags and memory attribute.
     pub fn set_frame(&mut self, frame: PhysFrame, flags: PageTableFlags, attr: PageTableAttribute) {
         // is not a block
-        assert!(flags.contains(PageTableFlags::TABLE_OR_PAGE));
+        debug_assert!(flags.contains(PageTableFlags::TABLE_OR_PAGE));
         self.set(frame.start_address().as_u64() | flags.bits() | attr.value);
     }
 
@@ -128,7 +128,7 @@ impl PageTableEntry {
         attr: PageTableAttribute,
     ) {
         // is a block
-        assert!(!flags.contains(PageTableFlags::TABLE_OR_PAGE));
+        debug_assert!(!flags.contains(PageTableFlags::TABLE_OR_PAGE));
         self.set(addr.align_down(S::SIZE).as_u64() | flags.bits() | attr.value);
     }
 
