@@ -1,10 +1,10 @@
 //! Abstractions for reading and modifying the mapping of pages.
 
-// mod recursive_page_table;
 mod mapped_page_table;
+mod recursive_page_table;
 
-// pub use self::recursive_page_table::RecursivePageTable;
 pub use self::mapped_page_table::MappedPageTable;
+pub use self::recursive_page_table::RecursivePageTable;
 
 use crate::paging::{
     frame::PhysFrame,
