@@ -1,10 +1,11 @@
+//! Abstractions for page tables and page table entries.
+
 use core::fmt;
 use core::ops::{Index, IndexMut};
 
-use super::{PageSize, PhysFrame};
-use addr::PhysAddr;
+use super::{PageSize, PhysFrame, Size4KiB};
+use crate::PhysAddr;
 
-use usize_conversions::usize_from;
 use ux::*;
 
 use register::cpu::RegisterReadWrite;
@@ -105,6 +106,12 @@ impl PageTableEntry {
         }
     }
 
+    /// Map the entry to the specified physical address with the specified flags and memory attribute.
+    pub fn set_addr(&mut self, addr: PhysAddr, flags: PageTableFlags, attr: PageTableAttribute) {
+        assert!(addr.is_aligned(Size4KiB::SIZE));
+        self.entry = (addr.as_u64()) | flags.bits() | attr.value;
+    }
+
     /// Map the entry to the specified physical frame with the specified flags and memory attribute.
     pub fn set_frame(&mut self, frame: PhysFrame, flags: PageTableFlags, attr: PageTableAttribute) {
         // is not a block
@@ -125,18 +132,13 @@ impl PageTableEntry {
         self.set(addr.align_down(S::SIZE).as_u64() | flags.bits() | attr.value);
     }
 
-    /// Map the entry to the specified physical address with the specified flags.
-    pub fn modify_addr(&mut self, addr: PhysAddr) {
-        self.entry = (self.entry & !ADDR_MASK) | addr.as_u64();
-    }
-
     /// Sets the flags of this entry.
-    pub fn modify_flags(&mut self, flags: PageTableFlags) {
+    pub fn set_flags(&mut self, flags: PageTableFlags) {
         self.entry = (self.entry & !FLAGS_MASK) | flags.bits();
     }
 
     /// Sets the memory attribute of this entry.
-    pub fn modify_attr(&mut self, attr: PageTableAttribute) {
+    pub fn set_attr(&mut self, attr: PageTableAttribute) {
         self.entry = (self.entry & !MEMORY_ATTR_MASK) | attr.value;
     }
 }
@@ -229,7 +231,8 @@ const ENTRY_COUNT: usize = 512;
 ///
 /// This struct implements the `Index` and `IndexMut` traits, so the entries can be accessed
 /// through index operations. For example, `page_table[15]` returns the 15th page table entry.
-#[repr(transparent)]
+#[repr(align(4096))]
+#[repr(C)]
 pub struct PageTable {
     entries: [PageTableEntry; ENTRY_COUNT],
 }
@@ -240,6 +243,16 @@ impl PageTable {
         for entry in self.entries.iter_mut() {
             entry.set_unused();
         }
+    }
+
+    /// Returns an iterator over the entries of the page table.
+    pub fn iter(&self) -> impl Iterator<Item = &PageTableEntry> {
+        self.entries.iter()
+    }
+
+    /// Returns an iterator that allows modifying the entries of the page table.
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut PageTableEntry> {
+        self.entries.iter_mut()
     }
 }
 
@@ -261,13 +274,13 @@ impl Index<u9> for PageTable {
     type Output = PageTableEntry;
 
     fn index(&self, index: u9) -> &Self::Output {
-        &self.entries[usize_from(u16::from(index))]
+        &self.entries[cast::usize(u16::from(index))]
     }
 }
 
 impl IndexMut<u9> for PageTable {
     fn index_mut(&mut self, index: u9) -> &mut Self::Output {
-        &mut self.entries[usize_from(u16::from(index))]
+        &mut self.entries[cast::usize(u16::from(index))]
     }
 }
 

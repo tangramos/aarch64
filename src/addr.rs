@@ -3,7 +3,6 @@ use core::fmt;
 use core::ops::{Add, AddAssign, Sub, SubAssign};
 
 use bit_field::BitField;
-use usize_conversions::FromUsize;
 use ux::*;
 
 #[derive(Clone, Copy, Debug)]
@@ -25,22 +24,42 @@ impl VirtAddrRange {
     }
 }
 
+/// A canonical 64-bit virtual memory address.
+///
+/// This is a wrapper type around an `u64`, so it is always 8 bytes, even when compiled
+/// on non 64-bit systems. The `UsizeConversions` trait can be used for performing conversions
+/// between `u64` and `usize`.
+///
+/// On `x86_64`, only the 48 lower bits of a virtual address can be used. The top 16 bits need
+/// to be copies of bit 47, i.e. the most significant bit. Addresses that fulfil this criterium
+/// are called “canonical”. This type guarantees that it always represents a canonical address.
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(transparent)]
 pub struct VirtAddr(u64);
 
+/// A 64-bit physical memory address.
+///
+/// This is a wrapper type around an `u64`, so it is always 8 bytes, even when compiled
+/// on non 64-bit systems. The `UsizeConversions` trait can be used for performing conversions
+/// between `u64` and `usize`.
+///
+/// On `x86_64`, only the 52 lower bits of a physical address can be used. The top 12 bits need
+/// to be zero. This type guarantees that it always represents a valid physical address.
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(transparent)]
 pub struct PhysAddr(u64);
 
+/// A passed `u64` was not a valid virtual address.
+///
+/// This means that bits 48 to 64 are not
+/// a valid sign extension and are not null either. So automatic sign extension would have
+/// overwritten possibly meaningful bits. This likely indicates a bug, for example an invalid
+/// address calculation.
 #[derive(Debug)]
 pub struct VirtAddrNotValid(u64);
 
 impl VirtAddr {
     /// Creates a new canonical virtual address.
-    ///
-    /// This function performs sign extension of bit 47 to make the address canonical. Panics
-    /// if the bits in the range 48 to 64 contain data (i.e. are not null and no sign extension).
     pub fn new(addr: u64) -> VirtAddr {
         Self::try_new(addr).expect("invalid virtual address")
     }
@@ -54,6 +73,7 @@ impl VirtAddr {
         }
     }
 
+    /// Creates a new canonical virtual address without checks.
     pub fn new_unchecked(addr: u64) -> VirtAddr {
         VirtAddr(addr)
     }
@@ -70,17 +90,13 @@ impl VirtAddr {
 
     /// Creates a virtual address from the given pointer
     pub fn from_ptr<T>(ptr: *const T) -> Self {
-        use usize_conversions::FromUsize;
-
-        Self::new(u64::from_usize(ptr as usize))
+        Self::new(cast::u64(ptr as usize))
     }
 
     /// Converts the address to a raw pointer.
     #[cfg(target_pointer_width = "64")]
     pub fn as_ptr<T>(self) -> *const T {
-        use usize_conversions::usize_from;
-
-        usize_from(self.as_u64()) as *const T
+        cast::usize(self.as_u64()) as *const T
     }
 
     /// Converts the address to a mutable raw pointer.
@@ -176,22 +192,16 @@ impl AddAssign<u64> for VirtAddr {
     }
 }
 
-impl Add<usize> for VirtAddr
-where
-    u64: FromUsize,
-{
+impl Add<usize> for VirtAddr {
     type Output = Self;
     fn add(self, rhs: usize) -> Self::Output {
-        self + u64::from_usize(rhs)
+        self + cast::u64(rhs)
     }
 }
 
-impl AddAssign<usize> for VirtAddr
-where
-    u64: FromUsize,
-{
+impl AddAssign<usize> for VirtAddr {
     fn add_assign(&mut self, rhs: usize) {
-        self.add_assign(u64::from_usize(rhs))
+        self.add_assign(cast::u64(rhs))
     }
 }
 
@@ -208,22 +218,16 @@ impl SubAssign<u64> for VirtAddr {
     }
 }
 
-impl Sub<usize> for VirtAddr
-where
-    u64: FromUsize,
-{
+impl Sub<usize> for VirtAddr {
     type Output = Self;
     fn sub(self, rhs: usize) -> Self::Output {
-        self - u64::from_usize(rhs)
+        self - cast::u64(rhs)
     }
 }
 
-impl SubAssign<usize> for VirtAddr
-where
-    u64: FromUsize,
-{
+impl SubAssign<usize> for VirtAddr {
     fn sub_assign(&mut self, rhs: usize) {
-        self.sub_assign(u64::from_usize(rhs))
+        self.sub_assign(cast::u64(rhs))
     }
 }
 
@@ -345,22 +349,16 @@ impl AddAssign<u64> for PhysAddr {
     }
 }
 
-impl Add<usize> for PhysAddr
-where
-    u64: FromUsize,
-{
+impl Add<usize> for PhysAddr {
     type Output = Self;
     fn add(self, rhs: usize) -> Self::Output {
-        self + u64::from_usize(rhs)
+        self + cast::u64(rhs)
     }
 }
 
-impl AddAssign<usize> for PhysAddr
-where
-    u64: FromUsize,
-{
+impl AddAssign<usize> for PhysAddr {
     fn add_assign(&mut self, rhs: usize) {
-        self.add_assign(u64::from_usize(rhs))
+        self.add_assign(cast::u64(rhs))
     }
 }
 
@@ -377,22 +375,16 @@ impl SubAssign<u64> for PhysAddr {
     }
 }
 
-impl Sub<usize> for PhysAddr
-where
-    u64: FromUsize,
-{
+impl Sub<usize> for PhysAddr {
     type Output = Self;
     fn sub(self, rhs: usize) -> Self::Output {
-        self - u64::from_usize(rhs)
+        self - cast::u64(rhs)
     }
 }
 
-impl SubAssign<usize> for PhysAddr
-where
-    u64: FromUsize,
-{
+impl SubAssign<usize> for PhysAddr {
     fn sub_assign(&mut self, rhs: usize) {
-        self.sub_assign(u64::from_usize(rhs))
+        self.sub_assign(cast::u64(rhs))
     }
 }
 
