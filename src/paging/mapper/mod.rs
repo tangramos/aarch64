@@ -16,7 +16,7 @@ use crate::{PhysAddr, VirtAddr};
 
 /// This trait defines page table operations that work for all page sizes of the aarch64
 /// architecture.
-pub trait MapperAllSizes: Mapper<Size4KiB> {
+pub trait MapperAllSizes: Mapper<Size4KiB> + Mapper<Size2MiB> + Mapper<Size1GiB> {
     /// Return the frame that the given virtual address is mapped to and the offset within that
     /// frame.
     ///
@@ -108,21 +108,7 @@ pub trait Mapper<S: PageSize> {
     /// Removes a mapping from the page table and returns the frame that used to be mapped.
     ///
     /// Note that no page tables or pages are deallocated.
-    fn unmap(&mut self, page: Page<S>) -> Result<(PhysFrame<S>, MapperFlush<S>), UnmapError> {
-        let entry = self.get_entry_mut(page)?;
-
-        if !entry.flags().contains(PageTableFlags::VALID) {
-            return Err(UnmapError::PageNotMapped);
-        } else if entry.is_block() {
-            return Err(UnmapError::ParentEntryHugePage);
-        }
-
-        let frame = PhysFrame::from_start_address(entry.addr())
-            .map_err(|()| UnmapError::InvalidFrameAddress(entry.addr()))?;
-
-        entry.set_unused();
-        Ok((frame, MapperFlush::new(page)))
-    }
+    fn unmap(&mut self, page: Page<S>) -> Result<(PhysFrame<S>, MapperFlush<S>), UnmapError>;
 
     /// Updates the flags of an existing mapping.
     fn update_flags(
