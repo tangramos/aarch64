@@ -5,7 +5,7 @@ use crate::paging::{
     frame_alloc::FrameAllocator,
     mapper::*,
     memory_attribute::*,
-    page::{Page, Size4KiB},
+    page::{Page, Size1GiB, Size2MiB, Size4KiB},
     page_table::{FrameError, PageTable, PageTableAttribute, PageTableEntry, PageTableFlags},
 };
 
