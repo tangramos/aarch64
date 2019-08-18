@@ -380,7 +380,11 @@ where
 
         if entry.is_unused() {
             if let Some(frame) = allocator.allocate_frame() {
-                entry.set_frame(frame, PageTableFlags::default(), MairNormal::attr_value());
+                entry.set_frame(
+                    frame,
+                    PageTableFlags::default_table(),
+                    MairNormal::attr_value(),
+                );
                 created = true;
             } else {
                 return Err(PageTableCreateError::FrameAllocationFailed);

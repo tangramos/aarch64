@@ -178,6 +178,8 @@ bitflags! {
         /// 0, Block
         /// 1, Table/Page
         const TABLE_OR_PAGE =   1 << 1;
+        /// Non-secure bit
+        const NS =   1 << 5;
         /// Access permission: accessable at EL0
         const AP_EL0 =          1 << 6;
         /// Access permission: read-only
@@ -212,13 +214,32 @@ bitflags! {
         const PXNTable =        1 << 59;
         /// Execute-never/Unprivileged execute-never for table descriptors
         const XNTable =         1 << 60;
+        /// Access permission: access at EL0 not permitted
+        const APTable_nEL0 =    1 << 61;
+        /// Access permission: read-only
+        const APTable_RO =      1 << 62;
+        /// Non-secure bit
+        const NSTable =         1 << 63;
     }
 }
 
-impl Default for PageTableFlags {
+impl PageTableFlags {
+    /// default flags for the table entry
     #[inline]
-    fn default() -> Self {
-        Self::VALID | Self::TABLE_OR_PAGE | Self::AF | Self::WRITE | Self::PXN | Self::UXN
+    pub fn default_table() -> Self {
+        Self::VALID | Self::TABLE_OR_PAGE
+    }
+
+    /// default flags for the block entry
+    #[inline]
+    pub fn default_block() -> Self {
+        Self::VALID | Self::AF
+    }
+
+    /// default flags for the page entry
+    #[inline]
+    pub fn default_page() -> Self {
+        Self::VALID | Self::TABLE_OR_PAGE | Self::AF
     }
 }
 

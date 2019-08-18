@@ -98,6 +98,8 @@ pub fn eret() -> ! {
 /// Invalidate all TLB entries.
 #[inline(always)]
 pub fn tlb_invalidate_all() {
+    // All stage 1 translations used at EL1, in the Inner Shareable shareability
+    // domain.
     unsafe {
         asm!(
             "dsb ishst
@@ -112,11 +114,14 @@ pub fn tlb_invalidate_all() {
 /// Invalidate TLB entries that would be used to translate the specified address.
 #[inline(always)]
 pub fn tlb_invalidate(vaddr: VirtAddr) {
+    // Translations used at EL1 for the specified address, for all ASID values,
+    // in the Inner Shareable shareability domain.
     unsafe {
         asm!(
             "dsb ishst
              tlbi vaale1is, $0
-             dsb ish"
+             dsb ish
+             isb"
             :: "r"(vaddr.as_u64() >> 12)
             :: "volatile"
         );
