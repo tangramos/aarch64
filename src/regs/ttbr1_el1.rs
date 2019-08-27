@@ -56,6 +56,11 @@ impl Reg {
     pub fn set_baddr(&self, addr: u64) {
         self.write(TTBR1_EL1::BADDR.val(addr >> 1));
     }
+
+    #[inline]
+    pub fn get_asid(&self) -> u16 {
+        self.read(TTBR1_EL1::ASID) as u16
+    }
 }
 
 pub static TTBR1_EL1: Reg = Reg {};

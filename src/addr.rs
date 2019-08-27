@@ -53,6 +53,7 @@ pub struct VirtAddrNotValid(u64);
 
 impl VirtAddr {
     /// Creates a new canonical virtual address.
+    #[inline]
     pub fn new(addr: u64) -> VirtAddr {
         // Self::try_new(addr).expect("invalid virtual address")
         VirtAddr(addr)
@@ -78,6 +79,7 @@ impl VirtAddr {
     }
 
     /// Converts the address to an `u64`.
+    #[inline]
     pub fn as_u64(self) -> u64 {
         self.0
     }
@@ -147,21 +149,25 @@ impl VirtAddr {
     }
 
     /// Returns the 9-bit level 1 page table index.
+    #[inline]
     pub fn p1_index(&self) -> u9 {
         u9::new(((self.0 >> 12) & 0o777).try_into().unwrap())
     }
 
     /// Returns the 9-bit level 2 page table index.
+    #[inline]
     pub fn p2_index(&self) -> u9 {
         u9::new(((self.0 >> 12 >> 9) & 0o777).try_into().unwrap())
     }
 
     /// Returns the 9-bit level 3 page table index.
+    #[inline]
     pub fn p3_index(&self) -> u9 {
         u9::new(((self.0 >> 12 >> 9 >> 9) & 0o777).try_into().unwrap())
     }
 
     /// Returns the 9-bit level 4 page table index.
+    #[inline]
     pub fn p4_index(&self) -> u9 {
         u9::new(((self.0 >> 12 >> 9 >> 9 >> 9) & 0o777).try_into().unwrap())
     }
@@ -242,6 +248,7 @@ impl PhysAddr {
     /// Creates a new physical address.
     ///
     /// Panics if a bit in the range 52 to 64 is set.
+    #[inline]
     pub fn new(addr: u64) -> PhysAddr {
         // Self::try_new(addr).expect("physical addresses must not have any bits in the range 52 to 64 set")
         PhysAddr(addr)
@@ -258,6 +265,7 @@ impl PhysAddr {
     }
 
     /// Converts the address to an `u64`.
+    #[inline]
     pub fn as_u64(self) -> u64 {
         self.0
     }
@@ -389,6 +397,7 @@ impl Sub<PhysAddr> for PhysAddr {
 ///
 /// Returns the greatest x with alignment `align` so that x <= addr. The alignment must be
 ///  a power of 2.
+#[inline]
 pub fn align_down(addr: u64, align: u64) -> u64 {
     debug_assert!(align.is_power_of_two(), "`align` must be a power of two");
     addr & !(align - 1)
@@ -398,6 +407,7 @@ pub fn align_down(addr: u64, align: u64) -> u64 {
 ///
 /// Returns the smallest x with alignment `align` so that x >= addr. The alignment must be
 /// a power of 2.
+#[inline]
 pub fn align_up(addr: u64, align: u64) -> u64 {
     debug_assert!(align.is_power_of_two(), "`align` must be a power of two");
     let align_mask = align - 1;

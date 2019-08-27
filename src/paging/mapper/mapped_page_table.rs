@@ -4,7 +4,6 @@ use crate::paging::{
     frame::PhysFrame,
     frame_alloc::FrameAllocator,
     mapper::*,
-    memory_attribute::*,
     page::{Page, Size1GiB, Size2MiB, Size4KiB},
     page_table::{FrameError, PageTable, PageTableAttribute, PageTableEntry, PageTableFlags},
 };
@@ -383,7 +382,7 @@ where
                 entry.set_frame(
                     frame,
                     PageTableFlags::default_table(),
-                    MairNormal::attr_value(),
+                    PageTableAttribute::new(0, 0, 0),
                 );
                 created = true;
             } else {

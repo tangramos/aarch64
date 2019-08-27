@@ -162,7 +162,10 @@ pub fn flush_dcache_range(start: usize, end: usize) {
     }
 }
 
-/// Address Translate.
+/// Address Translate (Stage 1 EL1 Read).
+///
+/// For Raspi 3, it always return the result of a translation table walk,
+/// regardless of the TLB caching.
 #[inline(always)]
 pub fn address_translate(vaddr: usize) -> usize {
     let paddr: usize;
@@ -179,6 +182,7 @@ pub fn address_translate(vaddr: usize) -> usize {
 }
 
 /// Read TTBRx_EL1 as PhysFrame
+#[inline(always)]
 pub fn ttbr_el1_read(which: u8) -> PhysFrame {
     let baddr = match which {
         0 => TTBR0_EL1.get_baddr(),
@@ -189,6 +193,7 @@ pub fn ttbr_el1_read(which: u8) -> PhysFrame {
 }
 
 /// Write TTBRx_EL1 from PhysFrame
+#[inline(always)]
 pub fn ttbr_el1_write(which: u8, frame: PhysFrame) {
     let baddr = frame.start_address().as_u64();
     match which {
@@ -198,7 +203,19 @@ pub fn ttbr_el1_write(which: u8, frame: PhysFrame) {
     };
 }
 
+/// Read TTBRx_EL1 as PhysFrame and ASID
+#[inline(always)]
+pub fn ttbr_el1_read_asid(which: u8) -> (u16, PhysFrame) {
+    let (asid, baddr) = match which {
+        0 => (TTBR0_EL1.get_asid(), TTBR0_EL1.get_baddr()),
+        1 => (TTBR1_EL1.get_asid(), TTBR1_EL1.get_baddr()),
+        _ => (0, 0),
+    };
+    (asid, PhysFrame::containing_address(PhysAddr::new(baddr)))
+}
+
 /// write TTBRx_EL1 from PhysFrame and ASID
+#[inline(always)]
 pub fn ttbr_el1_write_asid(which: u8, asid: u16, frame: PhysFrame) {
     let baddr = frame.start_address().as_u64();
     match which {

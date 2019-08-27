@@ -2,14 +2,11 @@
 
 use core::fmt;
 use core::ops::{Index, IndexMut};
+use register::FieldValue;
+use ux::*;
 
 use super::{PageSize, PhysFrame, Size4KiB};
 use crate::PhysAddr;
-
-use ux::*;
-
-use register::cpu::RegisterReadWrite;
-use register::FieldValue;
 
 /// Memory attribute fields mask
 pub const MEMORY_ATTR_MASK: u64 = (MEMORY_ATTRIBUTE::SH.mask << MEMORY_ATTRIBUTE::SH.shift)
@@ -37,18 +34,6 @@ pub enum FrameError {
 #[repr(transparent)]
 pub struct PageTableEntry {
     entry: u64,
-}
-
-impl RegisterReadWrite<u64, MEMORY_ATTRIBUTE::Register> for PageTableEntry {
-    #[inline]
-    fn get(&self) -> u64 {
-        self.entry
-    }
-
-    #[inline]
-    fn set(&self, value: u64) {
-        unsafe { *(&self.entry as *const u64 as *mut u64) = value }
-    }
 }
 
 impl PageTableEntry {
@@ -116,7 +101,7 @@ impl PageTableEntry {
     pub fn set_frame(&mut self, frame: PhysFrame, flags: PageTableFlags, attr: PageTableAttribute) {
         // is not a block
         debug_assert!(flags.contains(PageTableFlags::TABLE_OR_PAGE));
-        self.set(frame.start_address().as_u64() | flags.bits() | attr.value);
+        self.set_addr(frame.start_address(), flags, attr);
     }
 
     /// The descriptor gives the base address of a block of memory, and the attributes for that
@@ -129,7 +114,7 @@ impl PageTableEntry {
     ) {
         // is a block
         debug_assert!(!flags.contains(PageTableFlags::TABLE_OR_PAGE));
-        self.set(addr.align_down(S::SIZE).as_u64() | flags.bits() | attr.value);
+        self.set_addr(addr.align_down(S::SIZE), flags, attr);
     }
 
     /// Sets the flags of this entry.
@@ -179,7 +164,7 @@ bitflags! {
         /// 1, Table/Page
         const TABLE_OR_PAGE =   1 << 1;
         /// Non-secure bit
-        const NS =   1 << 5;
+        const NS =              1 << 5;
         /// Access permission: accessable at EL0
         const AP_EL0 =          1 << 6;
         /// Access permission: read-only

@@ -4,7 +4,6 @@ use crate::paging::{
     frame::PhysFrame,
     frame_alloc::FrameAllocator,
     mapper::*,
-    memory_attribute::*,
     page::{NotGiantPageSize, Page, PageSize, Size4KiB},
     page_table::{FrameError, PageTable, PageTableAttribute, PageTableEntry, PageTableFlags},
 };
@@ -75,7 +74,7 @@ impl RecursivePageTable {
                     entry.set_frame(
                         frame,
                         PageTableFlags::default_table(),
-                        MairNormal::attr_value(),
+                        PageTableAttribute::new(0, 0, 0),
                     );
                     created = true;
                 } else {
