@@ -24,7 +24,7 @@ extern crate usize_conversions;
 /// We use these integer types in various APIs, for example `u9` for page tables indices.
 pub extern crate ux;
 
-pub use addr::{align_down, align_up, PhysAddr, VirtAddr};
+pub use addr::{align_down, align_up, PhysAddr, VirtAddr, ALIGN_1GIB, ALIGN_2MIB, ALIGN_4KIB};
 
 pub mod addr;
 pub mod asm;

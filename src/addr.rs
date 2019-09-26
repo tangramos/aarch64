@@ -5,6 +5,10 @@ use core::ops::{Add, AddAssign, Sub, SubAssign};
 use bit_field::BitField;
 use ux::*;
 
+pub const ALIGN_4KIB: u64 = 0x0000_1000;
+pub const ALIGN_2MIB: u64 = 0x0020_0000;
+pub const ALIGN_1GIB: u64 = 0x4000_0000;
+
 #[derive(Clone, Copy, Debug)]
 #[repr(u8)]
 pub enum VirtAddrRange {
