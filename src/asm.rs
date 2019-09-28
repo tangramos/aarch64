@@ -77,6 +77,18 @@ pub fn wfe() {
     }
 }
 
+/// Send Event
+#[inline]
+pub fn sev() {
+    match () {
+        #[cfg(target_arch = "aarch64")]
+        () => unsafe { asm!("sev" :::: "volatile") },
+
+        #[cfg(not(target_arch = "aarch64"))]
+        () => unimplemented!(),
+    }
+}
+
 /// Exception return
 ///
 /// Will jump to wherever the corresponding link register points to, and
