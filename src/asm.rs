@@ -107,6 +107,12 @@ pub fn eret() -> ! {
     }
 }
 
+/// CPU id
+#[inline]
+pub fn cpuid() -> usize {
+    (MPIDR_EL1.get() & 3) as usize
+}
+
 /// Invalidate all TLB entries.
 #[inline(always)]
 pub fn tlb_invalidate_all() {
