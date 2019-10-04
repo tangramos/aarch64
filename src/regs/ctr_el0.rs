@@ -38,8 +38,10 @@ register_bitfields! {u32,
         /// The value 0b00 is permitted only in an implementation that includes
         /// ARMv8.2-VPIPT, otherwise the value is reserved.
         L1Ip OFFSET(14) NUMBITS(2) [
-            Unmasked = 0,
-            Masked = 1
+            VPIPT = 0b00,
+            AIVIVT = 0b01,
+            VIPT = 0b10,
+            PIPT = 0b11
         ],
 
         /// Log2 of the number of words in the smallest cache line of all the

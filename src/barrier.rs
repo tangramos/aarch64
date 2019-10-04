@@ -20,7 +20,7 @@
 //
 // https://github.com/rust-lang-nursery/stdsimd/pull/557
 
-mod sealed {
+pub mod sealed {
     pub trait Dmb {
         unsafe fn __dmb(&self);
     }
@@ -61,6 +61,11 @@ pub struct ISH;
 pub struct ISHST;
 pub struct ISHLD;
 
+// Non Shareable
+pub struct NSH;
+pub struct NSHST;
+pub struct NSHLD;
+
 dmb_dsb!(SY);
 dmb_dsb!(ST);
 dmb_dsb!(LD);
@@ -68,6 +73,10 @@ dmb_dsb!(LD);
 dmb_dsb!(ISH);
 dmb_dsb!(ISHST);
 dmb_dsb!(ISHLD);
+
+dmb_dsb!(NSH);
+dmb_dsb!(NSHST);
+dmb_dsb!(NSHLD);
 
 impl sealed::Isb for SY {
     #[inline(always)]
@@ -93,11 +102,9 @@ where
 }
 
 #[inline(always)]
-pub unsafe fn isb<A>(arg: A)
-where
-    A: sealed::Isb,
-{
-    arg.__isb()
+pub unsafe fn isb() {
+    use self::sealed::Isb;
+    SY.__isb()
 }
 
 /// Write memory barrier

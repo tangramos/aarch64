@@ -176,7 +176,7 @@ impl<S: PageSize> MapperFlush<S> {
     /// Flush the page from the TLB to ensure that the newest mapping is used.
     pub fn flush(self) {
         #[cfg(target_arch = "aarch64")]
-        crate::asm::tlb_invalidate(self.0.start_address());
+        crate::translation::invalidate_tlb_vaddr(self.0.start_address());
     }
 
     /// Don't flush the TLB and silence the “must be used” warning.

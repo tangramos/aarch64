@@ -29,5 +29,7 @@ pub use addr::{align_down, align_up, PhysAddr, VirtAddr, ALIGN_1GIB, ALIGN_2MIB,
 pub mod addr;
 pub mod asm;
 pub mod barrier;
+pub mod cache;
 pub mod paging;
 pub mod regs;
+pub mod translation;
