@@ -1,6 +1,6 @@
 [package]
 name = "aarch64"
-version = "3.0.0"
+version = "3.0.1"
 authors = ["Andre Richter <andre.o.richter@gmail.com>", "koumingyang <1761674434@qq.com>", "Yuekai Jia <equation618@gmail.com>"]
 description = "Low level access to Cortex-A processors"
 homepage = "https://github.com/equation314/aarch64"
