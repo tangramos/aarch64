@@ -24,7 +24,7 @@ macro_rules! __read_raw {
                 () => {
                     let reg;
                     unsafe {
-                        asm!(concat!($asm_instr, " $0, ", $asm_reg_name) : "=r"(reg) ::: "volatile");
+                        llvm_asm!(concat!($asm_instr, " $0, ", $asm_reg_name) : "=r"(reg) ::: "volatile");
                     }
                     reg
                 }
@@ -46,7 +46,7 @@ macro_rules! __write_raw {
                 #[cfg(target_arch = "aarch64")]
                 () => {
                     unsafe {
-                        asm!(concat!($asm_instr, " ", $asm_reg_name, ", $0") :: "r"(value) :: "volatile")
+                        llvm_asm!(concat!($asm_instr, " ", $asm_reg_name, ", $0") :: "r"(value) :: "volatile")
                     }
                 }
 

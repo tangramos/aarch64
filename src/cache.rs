@@ -70,12 +70,12 @@ impl ICache {
     /// Invalidate all I-Cache to the Point of Unification in all PEs.
     #[inline]
     pub fn flush_all() {
-        unsafe { asm!("ic ialluis; dsb ish; isb":::: "volatile") };
+        unsafe { llvm_asm!("ic ialluis; dsb ish; isb":::: "volatile") };
     }
     /// Invalidate all I-Cache to the Point of Unification in the current PE.
     #[inline]
     pub fn local_flush_all() {
-        unsafe { asm!("ic iallu; dsb nsh; isb":::: "volatile") };
+        unsafe { llvm_asm!("ic iallu; dsb nsh; isb":::: "volatile") };
     }
 }
 
@@ -124,7 +124,7 @@ macro_rules! define_cache_op {
             #[inline]
             fn flush_line_op(vaddr: usize) {
                 unsafe {
-                    asm!(concat!(
+                    llvm_asm!(concat!(
                             cache_ins!($cache),
                             " ",
                             cache_op!($flush),

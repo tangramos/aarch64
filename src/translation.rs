@@ -10,7 +10,7 @@ use regs::*;
 pub fn address_translate(vaddr: usize) -> usize {
     let paddr: usize;
     unsafe {
-        asm!(
+        llvm_asm!(
             "at S1E1R, $1
              mrs $0, par_el1"
             : "=r"(paddr)
@@ -71,7 +71,7 @@ pub fn invalidate_tlb_all() {
     // All stage 1 translations used at EL1, in the Inner Shareable shareability
     // domain.
     unsafe {
-        asm!(
+        llvm_asm!(
             "dsb ishst
              tlbi vmalle1is
              dsb ish
@@ -86,7 +86,7 @@ pub fn invalidate_tlb_all() {
 pub fn local_invalidate_tlb_all() {
     // All stage 1 translations used at EL1
     unsafe {
-        asm!(
+        llvm_asm!(
             "dsb nshst
              tlbi vmalle1
              dsb nsh
@@ -102,7 +102,7 @@ pub fn invalidate_tlb_vaddr(vaddr: VirtAddr) {
     // Translations used at EL1 for the specified address, for all ASID values,
     // in the Inner Shareable shareability domain.
     unsafe {
-        asm!(
+        llvm_asm!(
             "dsb ishst
              tlbi vaae1is, $0
              dsb ish

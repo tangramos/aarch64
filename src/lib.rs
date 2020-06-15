@@ -8,7 +8,7 @@
 //! If you want to contribute, feel free to reach out!
 
 #![no_std]
-#![feature(asm)]
+#![feature(llvm_asm)]
 #![feature(const_fn)]
 #![feature(core_intrinsics)]
 

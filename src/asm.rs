@@ -25,7 +25,7 @@ use regs::*;
 pub fn sp() -> *const u8 {
     let ptr: usize;
     unsafe {
-        asm!("mov $0, sp" : "=r"(ptr) ::: "volatile");
+        llvm_asm!("mov $0, sp" : "=r"(ptr) ::: "volatile");
     }
 
     ptr as *const u8
@@ -35,7 +35,7 @@ pub fn sp() -> *const u8 {
 #[inline(always)]
 pub unsafe fn get_pc() -> usize {
     let pc: usize;
-    asm!("adr $0, ." : "=r"(pc) ::: "volatile");
+    llvm_asm!("adr $0, ." : "=r"(pc) ::: "volatile");
     pc
 }
 
@@ -44,7 +44,7 @@ pub unsafe fn get_pc() -> usize {
 pub fn nop() {
     match () {
         #[cfg(target_arch = "aarch64")]
-        () => unsafe { asm!("nop" :::: "volatile") },
+        () => unsafe { llvm_asm!("nop" :::: "volatile") },
 
         #[cfg(not(target_arch = "aarch64"))]
         () => unimplemented!(),
@@ -56,7 +56,7 @@ pub fn nop() {
 pub fn wfi() {
     match () {
         #[cfg(target_arch = "aarch64")]
-        () => unsafe { asm!("wfi" :::: "volatile") },
+        () => unsafe { llvm_asm!("wfi" :::: "volatile") },
 
         #[cfg(not(target_arch = "aarch64"))]
         () => unimplemented!(),
@@ -68,7 +68,7 @@ pub fn wfi() {
 pub fn wfe() {
     match () {
         #[cfg(target_arch = "aarch64")]
-        () => unsafe { asm!("wfe" :::: "volatile") },
+        () => unsafe { llvm_asm!("wfe" :::: "volatile") },
 
         #[cfg(not(target_arch = "aarch64"))]
         () => unimplemented!(),
@@ -80,7 +80,7 @@ pub fn wfe() {
 pub fn sev() {
     match () {
         #[cfg(target_arch = "aarch64")]
-        () => unsafe { asm!("sev" :::: "volatile") },
+        () => unsafe { llvm_asm!("sev" :::: "volatile") },
 
         #[cfg(not(target_arch = "aarch64"))]
         () => unimplemented!(),
@@ -96,7 +96,7 @@ pub fn eret() -> ! {
     match () {
         #[cfg(target_arch = "aarch64")]
         () => unsafe {
-            asm!("eret" :::: "volatile");
+            llvm_asm!("eret" :::: "volatile");
             unreachable!()
         },
 
