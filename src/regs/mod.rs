@@ -43,6 +43,7 @@ pub use self::ctr_el0::CTR_EL0;
 pub use self::currentel::CurrentEL;
 pub use self::daif::DAIF;
 pub use self::elr_el2::ELR_EL2;
+pub use self::esr_el1::ESR_EL1;
 pub use self::far_el1::FAR_EL1;
 pub use self::hcr_el2::HCR_EL2;
 pub use self::id_aa64mmfr0_el1::ID_AA64MMFR0_EL1;
