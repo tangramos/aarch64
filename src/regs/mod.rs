@@ -13,6 +13,7 @@ mod ctr_el0;
 mod currentel;
 mod daif;
 mod elr_el2;
+mod esr_el1;
 mod far_el1;
 mod hcr_el2;
 mod id_aa64mmfr0_el1;
