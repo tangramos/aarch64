@@ -30,13 +30,19 @@ pub enum FrameError {
 }
 
 /// A 64-bit page table entry.
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 #[repr(transparent)]
 pub struct PageTableEntry {
     entry: u64,
 }
 
 impl PageTableEntry {
+    /// Creates an unused entry.
+    #[inline]
+    pub const fn new() -> Self {
+        Self { entry: 0 }
+    }
+
     /// Returns whether this entry is zero.
     #[inline]
     pub fn is_unused(&self) -> bool {
@@ -244,6 +250,13 @@ pub struct PageTable {
 }
 
 impl PageTable {
+    /// Creates an empty page table.
+    pub const fn new() -> Self {
+        Self {
+            entries: [PageTableEntry::new(); ENTRY_COUNT],
+        }
+    }
+
     /// Clears all entries.
     pub fn zero(&mut self) {
         for entry in self.entries.iter_mut() {
