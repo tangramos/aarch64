@@ -4,14 +4,17 @@
 
 #![allow(non_upper_case_globals)]
 
-pub use self::frame::PhysFrame;
-pub use self::frame_alloc::{FrameAllocator, FrameDeallocator};
+pub use self::{
+    frame::PhysFrame,
+    frame_alloc::{FrameAllocator, FrameDeallocator},
+};
 
-pub use self::mapper::Mapper;
-pub use self::mapper::{MappedPageTable, RecursivePageTable};
+pub use self::mapper::{MappedPageTable, Mapper, RecursivePageTable};
 
-pub use self::page::{Page, PageSize, Size1GiB, Size2MiB, Size4KiB};
-pub use self::page_table::{PageTable, PageTableAttribute, PageTableEntry, PageTableFlags};
+pub use self::{
+    page::{Page, PageSize, Size1GiB, Size2MiB, Size4KiB},
+    page_table::{PageTable, PageTableAttribute, PageTableEntry, PageTableFlags},
+};
 
 pub mod frame;
 mod frame_alloc;

@@ -1,6 +1,8 @@
-use core::convert::{Into, TryInto};
-use core::fmt;
-use core::ops::{Add, AddAssign, Sub, SubAssign};
+use core::{
+    convert::{Into, TryInto},
+    fmt,
+    ops::{Add, AddAssign, Sub, SubAssign},
+};
 
 use bit_field::BitField;
 use ux::*;
@@ -254,7 +256,8 @@ impl PhysAddr {
     /// Panics if a bit in the range 52 to 64 is set.
     #[inline]
     pub fn new(addr: u64) -> PhysAddr {
-        // Self::try_new(addr).expect("physical addresses must not have any bits in the range 52 to 64 set")
+        // Self::try_new(addr).expect("physical addresses must not have any bits in the range 52 to
+        // 64 set")
         PhysAddr(addr)
     }
 

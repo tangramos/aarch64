@@ -1,9 +1,11 @@
 //! Abstractions for default-sized and huge virtual memory pages.
 
 use crate::addr::{VirtAddr, VirtAddrNotValid, VirtAddrRange};
-use core::fmt;
-use core::marker::PhantomData;
-use core::ops::{Add, AddAssign, Sub, SubAssign};
+use core::{
+    fmt,
+    marker::PhantomData,
+    ops::{Add, AddAssign, Sub, SubAssign},
+};
 use ux::*;
 
 /// Trait for abstracting over the three possible block/page sizes on aarch64, 4KiB, 2MiB, 1GiB.
