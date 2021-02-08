@@ -92,4 +92,4 @@ jobs:
     - run: rustup toolchain install nightly --profile minimal --component clippy
     - run: rustup default nightly
     - run: rustup target add ${{ matrix.target }}
-    - run: cargo clippy --target=${{ matrix.target }}
+    # - run: cargo clippy --target=${{ matrix.target }}
