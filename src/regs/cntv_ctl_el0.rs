@@ -4,15 +4,16 @@
 //
 // Author(s):
 //   - Andre Richter <andre.o.richter@gmail.com>
+//   - Gregor Reitzenstein <me@dequbed.space>
 
-//! Counter-timer Physical Timer Control register - EL0
+//! Counter-timer Virtual Timer Control register - EL0
 //!
-//! Control register for the EL1 physical timer.
+//! Control register for the virtual timer
 
 use register::{cpu::RegisterReadWrite, register_bitfields};
 
 register_bitfields! {u64,
-    pub CNTP_CTL_EL0 [
+    pub CNTV_CTL_EL0 [
         /// The status of the timer. This bit indicates whether the timer condition is met:
         ///
         /// 0 Timer condition is not met.
@@ -37,15 +38,20 @@ register_bitfields! {u64,
         ///
         /// 0 Timer disabled.
         /// 1 Timer enabled.
+        ///
+        /// Setting this bit to 0 disables the timer output signal but the timer value accessible
+        /// from `CNTV_TVAL_EL0` continues to count down.
+        ///
+        /// Disabling the output signal might be a power-saving option
         ENABLE  OFFSET(0) NUMBITS(1) []
     ]
 }
 
 pub struct Reg;
 
-impl RegisterReadWrite<u64, CNTP_CTL_EL0::Register> for Reg {
-    sys_coproc_read_raw!(u64, "CNTP_CTL_EL0", "x");
-    sys_coproc_write_raw!(u64, "CNTP_CTL_EL0", "x");
+impl RegisterReadWrite<u64, CNTV_CTL_EL0::Register> for Reg {
+    sys_coproc_read_raw!(u64, "CNTV_CTL_EL0", "x");
+    sys_coproc_write_raw!(u64, "CNTV_CTL_EL0", "x");
 }
 
-pub static CNTP_CTL_EL0: Reg = Reg {};
+pub static CNTV_CTL_EL0: Reg = Reg {};

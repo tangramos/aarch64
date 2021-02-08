@@ -1,8 +1,10 @@
-use barrier::{dsb, isb, sealed};
+use crate::{
+    barrier::{dsb, isb, sealed},
+    regs::*,
+};
 use core::marker::PhantomData;
-use regs::*;
 
-pub use barrier::{ISH, NSH, SY};
+pub use crate::barrier::{ISH, NSH, SY};
 
 pub trait CoherencyPoint {}
 
@@ -35,7 +37,7 @@ pub trait Cache {
     /// Flush a cache line by the virtual address.
     fn flush_line_op(vaddr: usize);
     /// Cache line size in bytes
-    fn cache_line_size() -> u32;
+    fn cache_line_size() -> u64;
 
     /// Flush cache for the VA interval [start, end) in the shareability domain.
     fn flush_range<A: sealed::Dsb>(start: usize, end: usize, domain: A) {
@@ -135,7 +137,7 @@ macro_rules! define_cache_op {
                 }
             }
             #[inline]
-            fn cache_line_size() -> u32 {
+            fn cache_line_size() -> u64 {
                 CTR_EL0.read(cache_line_size!($cache))
             }
         }

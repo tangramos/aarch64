@@ -1,16 +1,15 @@
 //! Abstractions for page tables and page table entries.
 
-use core::fmt;
-use core::ops::{Index, IndexMut};
+use core::{
+    fmt,
+    ops::{Index, IndexMut},
+};
 use register::FieldValue;
 use ux::*;
 
 use super::{PageSize, PhysFrame, Size4KiB};
 use crate::PhysAddr;
 
-/// Memory attribute fields mask
-pub const MEMORY_ATTR_MASK: u64 = (MEMORY_ATTRIBUTE::SH.mask << MEMORY_ATTRIBUTE::SH.shift)
-    | (MEMORY_ATTRIBUTE::AttrIndx.mask << MEMORY_ATTRIBUTE::AttrIndx.shift);
 /// Output address mask
 pub const ADDR_MASK: u64 = 0x0000_ffff_ffff_f000;
 /// Other flags mask
@@ -85,7 +84,7 @@ impl PageTableEntry {
     ///
     /// - `FrameError::FrameNotPresent` if the entry doesn't have the `PRESENT` flag set.
     /// - `FrameError::HugeFrame` if the entry has the `HUGE_PAGE` flag set (for huge pages the
-    ///    `addr` function must be used)
+    ///   `addr` function must be used)
     pub fn frame(&self) -> Result<PhysFrame, FrameError> {
         if !self.flags().contains(PageTableFlags::VALID) {
             Err(FrameError::FrameNotPresent)
@@ -97,7 +96,8 @@ impl PageTableEntry {
         }
     }
 
-    /// Map the entry to the specified physical address with the specified flags and memory attribute.
+    /// Map the entry to the specified physical address with the specified flags and memory
+    /// attribute.
     pub fn set_addr(&mut self, addr: PhysAddr, flags: PageTableFlags, attr: PageTableAttribute) {
         debug_assert!(addr.is_aligned(Size4KiB::SIZE));
         self.entry = (addr.as_u64()) | flags.bits() | attr.value;
@@ -147,7 +147,7 @@ impl fmt::Debug for PageTableEntry {
 
 register_bitfields! {u64,
     // Memory attribute fields in the VMSAv8-64 translation table format descriptors (Page 2148~2152)
-    MEMORY_ATTRIBUTE [
+    pub MEMORY_ATTRIBUTE [
         /// Shareability field
         SH       OFFSET(8) NUMBITS(2) [
             NonShareable = 0b00,
@@ -159,6 +159,10 @@ register_bitfields! {u64,
         AttrIndx OFFSET(2) NUMBITS(3) []
     ]
 }
+
+/// Memory attribute fields mask
+pub const MEMORY_ATTR_MASK: u64 = (0b11 /* MEMORY_ATTRIBUTE::SH.mask */ << MEMORY_ATTRIBUTE::SH.shift)
+    | (0b111 /* MEMORY_ATTRIBUTE::AttrIndx.mask */ << MEMORY_ATTRIBUTE::AttrIndx.shift);
 
 bitflags! {
     /// Possible flags for a page table entry.

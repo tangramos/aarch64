@@ -1,18 +1,16 @@
-/*
- * Copyright (c) 2018 by the author(s)
- *
- * =============================================================================
- *
- * Licensed under either of
- *   - Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
- *   - MIT License (http://opensource.org/licenses/MIT)
- * at your option.
- *
- * =============================================================================
- *
- * Author(s):
- *   - Yuekai Jia <equation618@gmail.com>
- */
+// Copyright (c) 2018 by the author(s)
+//
+// =============================================================================
+//
+// Licensed under either of
+//   - Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
+//   - MIT License (http://opensource.org/licenses/MIT)
+// at your option.
+//
+// =============================================================================
+//
+// Author(s):
+//   - Yuekai Jia <equation618@gmail.com>
 
 //! Cache Type Register
 //!
@@ -20,8 +18,8 @@
 
 use register::cpu::RegisterReadWrite;
 
-register_bitfields! {u32,
-    CTR_EL0 [
+register_bitfields! {u64,
+    pub CTR_EL0 [
         /// Log2 of the number of words in the smallest cache line of all the
         /// data caches and unified caches that are controlled by the PE.
         DminLine OFFSET(16) NUMBITS(4) [],
@@ -52,9 +50,9 @@ register_bitfields! {u32,
 
 pub struct Reg;
 
-impl RegisterReadWrite<u32, CTR_EL0::Register> for Reg {
-    sys_coproc_read_raw!(u32, "CTR_EL0");
-    sys_coproc_write_raw!(u32, "CTR_EL0");
+impl RegisterReadWrite<u64, CTR_EL0::Register> for Reg {
+    sys_coproc_read_raw!(u64, "CTR_EL0", "x");
+    sys_coproc_write_raw!(u64, "CTR_EL0", "x");
 }
 
 pub static CTR_EL0: Reg = Reg {};

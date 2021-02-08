@@ -5,17 +5,17 @@
 // Author(s):
 //   - Andre Richter <andre.o.richter@gmail.com>
 
-//! Counter-timer Physical Timer TimerValue register - EL0
+//! Exception Link Register - EL1
 //!
-//! Holds the timer value for the EL1 physical timer.
+//! When taking an exception to EL1, holds the address to return to.
 
 use register::cpu::RegisterReadWrite;
 
 pub struct Reg;
 
 impl RegisterReadWrite<u64, ()> for Reg {
-    sys_coproc_read_raw!(u64, "CNTP_TVAL_EL0", "x");
-    sys_coproc_write_raw!(u64, "CNTP_TVAL_EL0", "x");
+    sys_coproc_read_raw!(u64, "ELR_EL1", "x");
+    sys_coproc_write_raw!(u64, "ELR_EL1", "x");
 }
 
-pub static CNTP_TVAL_EL0: Reg = Reg {};
+pub static ELR_EL1: Reg = Reg {};
