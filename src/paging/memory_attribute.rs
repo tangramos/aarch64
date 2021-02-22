@@ -1,15 +1,16 @@
-//!Memory region attributes (D4.5, page 2174)
+//! Memory region attributes (D4.5, page 2174)
 
-use crate::paging::page_table::{PageTableAttribute, MEMORY_ATTRIBUTE};
-use crate::regs::*;
+use crate::{
+    paging::page_table::{PageTableAttribute, MEMORY_ATTRIBUTE},
+    regs::*,
+};
+use register::FieldValue;
 
 pub trait MairType {
     const INDEX: u64;
 
-    #[inline]
-    fn config_value() -> u64;
+    fn config_value() -> FieldValue<u64, MAIR_EL1::Register>;
 
-    #[inline]
     fn attr_value() -> PageTableAttribute;
 }
 
@@ -21,10 +22,9 @@ impl MairType for MairNormal {
     const INDEX: u64 = 0;
 
     #[inline]
-    fn config_value() -> u64 {
-        (MAIR_ATTR::Attr_HIGH::Memory_OuterWriteBack_NonTransient_ReadAlloc_WriteAlloc
-            + MAIR_ATTR::Attr_LOW_MEMORY::InnerWriteBack_NonTransient_ReadAlloc_WriteAlloc)
-            .value
+    fn config_value() -> FieldValue<u64, MAIR_EL1::Register> {
+        MAIR_EL1::Attr0_Normal_Outer::WriteBack_NonTransient_ReadWriteAlloc
+            + MAIR_EL1::Attr0_Normal_Inner::WriteBack_NonTransient_ReadWriteAlloc
     }
 
     #[inline]
@@ -37,8 +37,8 @@ impl MairType for MairDevice {
     const INDEX: u64 = 1;
 
     #[inline]
-    fn config_value() -> u64 {
-        (MAIR_ATTR::Attr_HIGH::Device + MAIR_ATTR::Attr_LOW_DEVICE::Device_nGnRE).value
+    fn config_value() -> FieldValue<u64, MAIR_EL1::Register> {
+        MAIR_EL1::Attr1_Device::nonGathering_nonReordering_EarlyWriteAck
     }
 
     #[inline]
@@ -51,10 +51,8 @@ impl MairType for MairNormalNonCacheable {
     const INDEX: u64 = 2;
 
     #[inline]
-    fn config_value() -> u64 {
-        (MAIR_ATTR::Attr_HIGH::Memory_OuterNonCacheable
-            + MAIR_ATTR::Attr_LOW_MEMORY::InnerNonCacheable)
-            .value
+    fn config_value() -> FieldValue<u64, MAIR_EL1::Register> {
+        MAIR_EL1::Attr2_Normal_Outer::NonCacheable + MAIR_EL1::Attr2_Normal_Inner::NonCacheable
     }
 
     #[inline]

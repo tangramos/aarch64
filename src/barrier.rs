@@ -1,22 +1,12 @@
-/*
- * Copyright (c) 2018 by the author(s)
- *
- * =============================================================================
- *
- * Licensed under either of
- *   - Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
- *   - MIT License (http://opensource.org/licenses/MIT)
- * at your option.
- *
- * =============================================================================
- *
- * Author(s):
- *   - Andre Richter <andre.o.richter@gmail.com>
- */
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+//
+// Copyright (c) 2018-2021 by the author(s)
+//
+// Author(s):
+//   - Andre Richter <andre.o.richter@gmail.com>
 
-// Borrow implementations from the pending upstream ACLE implementation until it
-// is merged. Afterwards, we'll probably just reexport them, hoping that the API
-// doesn't change.
+// Borrow implementations from the pending upstream ACLE implementation until it is merged.
+// Afterwards, we'll probably just reexport them, hoping that the API doesn't change.
 //
 // https://github.com/rust-lang-nursery/stdsimd/pull/557
 
@@ -39,13 +29,29 @@ macro_rules! dmb_dsb {
         impl sealed::Dmb for $A {
             #[inline(always)]
             unsafe fn __dmb(&self) {
-                llvm_asm!(concat!("DMB ", stringify!($A)) : : : "memory" : "volatile")
+                match () {
+                    #[cfg(target_arch = "aarch64")]
+                    () => {
+                        asm!(concat!("DMB ", stringify!($A)), options(nostack))
+                    }
+
+                    #[cfg(not(target_arch = "aarch64"))]
+                    () => unimplemented!(),
+                }
             }
         }
         impl sealed::Dsb for $A {
             #[inline(always)]
             unsafe fn __dsb(&self) {
-                llvm_asm!(concat!("DSB ", stringify!($A)) : : : "memory" : "volatile")
+                match () {
+                    #[cfg(target_arch = "aarch64")]
+                    () => {
+                        asm!(concat!("DSB ", stringify!($A)), options(nostack))
+                    }
+
+                    #[cfg(not(target_arch = "aarch64"))]
+                    () => unimplemented!(),
+                }
             }
         }
     };
@@ -81,10 +87,21 @@ dmb_dsb!(NSHLD);
 impl sealed::Isb for SY {
     #[inline(always)]
     unsafe fn __isb(&self) {
-        llvm_asm!("ISB SY" : : : "memory" : "volatile")
+        match () {
+            #[cfg(target_arch = "aarch64")]
+            () => {
+                asm!("ISB SY", options(nostack))
+            }
+
+            #[cfg(not(target_arch = "aarch64"))]
+            () => unimplemented!(),
+        }
     }
 }
 
+/// # Safety
+///
+/// In your own hands, this is hardware land!
 #[inline(always)]
 pub unsafe fn dmb<A>(arg: A)
 where
@@ -93,6 +110,9 @@ where
     arg.__dmb()
 }
 
+/// # Safety
+///
+/// In your own hands, this is hardware land!
 #[inline(always)]
 pub unsafe fn dsb<A>(arg: A)
 where
@@ -101,6 +121,9 @@ where
     arg.__dsb()
 }
 
+/// # Safety
+///
+/// In your own hands, this is hardware land!
 #[inline(always)]
 pub unsafe fn isb() {
     use self::sealed::Isb;

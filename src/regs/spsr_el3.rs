@@ -4,27 +4,28 @@
 //
 // Author(s):
 //   - Andre Richter <andre.o.richter@gmail.com>
+//   - Berkus Decker <berkus+github@metta.systems>
 
-//! Saved Program Status Register - EL2
+//! Saved Program Status Register - EL3
 //!
-//! Holds the saved process state when an exception is taken to EL2.
+//! Holds the saved process state when an exception is taken to EL3.
 
 use register::{cpu::RegisterReadWrite, register_bitfields};
 
 register_bitfields! {u64,
-    pub SPSR_EL2 [
+    SPSR_EL3 [
         /// Negative condition flag.
         ///
-        /// Set to the value of the N condition flag on taking an exception to EL2, and copied to
-        /// the N condition flag on executing an exception return operation in EL2.
+        /// Set to the value of the N condition flag on taking an exception to EL3, and copied to
+        /// the N condition flag on executing an exception return operation in EL3.
         ///
         /// Set to 1 if the result of the last flag-setting instruction was negative.
         N OFFSET(31) NUMBITS(1) [],
 
         /// Zero condition flag.
         ///
-        /// Set to the value of the Z condition flag on taking an exception to EL2, and copied to
-        /// the Z condition flag on executing an exception return operation in EL2.
+        /// Set to the value of the Z condition flag on taking an exception to EL3, and copied to
+        /// the Z condition flag on executing an exception return operation in EL3.
         ///
         /// Set to 1 if the result of the last flag-setting instruction was zero, and to 0
         /// otherwise. A result of zero often indicates an equal result from a comparison.
@@ -32,8 +33,8 @@ register_bitfields! {u64,
 
         /// Carry condition flag.
         ///
-        /// Set to the value of the C condition flag on taking an exception to EL2, and copied to
-        /// the C condition flag on executing an exception return operation in EL2.
+        /// Set to the value of the C condition flag on taking an exception to EL3, and copied to
+        /// the C condition flag on executing an exception return operation in EL3.
         ///
         /// Set to 1 if the last flag-setting instruction resulted in a carry condition, for example
         /// an unsigned overflow on an addition.
@@ -41,8 +42,8 @@ register_bitfields! {u64,
 
         /// Overflow condition flag.
         ///
-        /// Set to the value of the V condition flag on taking an exception to EL2, and copied to
-        /// the V condition flag on executing an exception return operation in EL2.
+        /// Set to the value of the V condition flag on taking an exception to EL3, and copied to
+        /// the V condition flag on executing an exception return operation in EL3.
         ///
         /// Set to 1 if the last flag-setting instruction resulted in an overflow condition, for
         /// example a signed overflow on an addition.
@@ -129,9 +130,9 @@ register_bitfields! {u64,
 
 pub struct Reg;
 
-impl RegisterReadWrite<u64, SPSR_EL2::Register> for Reg {
-    sys_coproc_read_raw!(u64, "SPSR_EL2", "x");
-    sys_coproc_write_raw!(u64, "SPSR_EL2", "x");
+impl RegisterReadWrite<u64, SPSR_EL3::Register> for Reg {
+    sys_coproc_read_raw!(u64, "SPSR_EL3", "x");
+    sys_coproc_write_raw!(u64, "SPSR_EL3", "x");
 }
 
-pub static SPSR_EL2: Reg = Reg {};
+pub static SPSR_EL3: Reg = Reg {};

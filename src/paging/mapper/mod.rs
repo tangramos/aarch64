@@ -3,16 +3,17 @@
 mod mapped_page_table;
 mod recursive_page_table;
 
-pub use self::mapped_page_table::MappedPageTable;
-pub use self::recursive_page_table::RecursivePageTable;
+pub use self::{mapped_page_table::MappedPageTable, recursive_page_table::RecursivePageTable};
 
-use crate::paging::{
-    frame::PhysFrame,
-    frame_alloc::FrameAllocator,
-    page::{Page, PageSize, Size1GiB, Size2MiB, Size4KiB},
-    page_table::{PageTableAttribute, PageTableEntry, PageTableFlags},
+use crate::{
+    paging::{
+        frame::PhysFrame,
+        frame_alloc::FrameAllocator,
+        page::{Page, PageSize, Size1GiB, Size2MiB, Size4KiB},
+        page_table::{PageTableAttribute, PageTableEntry, PageTableFlags},
+    },
+    PhysAddr, VirtAddr,
 };
-use crate::{PhysAddr, VirtAddr};
 
 /// This trait defines page table operations that work for all page sizes of the aarch64
 /// architecture.

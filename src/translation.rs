@@ -1,6 +1,8 @@
-use addr::{PhysAddr, VirtAddr};
-use paging::PhysFrame;
-use regs::*;
+use crate::{
+    addr::{PhysAddr, VirtAddr},
+    paging::PhysFrame,
+    regs::*,
+};
 
 /// Address Translate (Stage 1 EL1 Read).
 ///

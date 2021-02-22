@@ -4,16 +4,17 @@
 //
 // Author(s):
 //   - Andre Richter <andre.o.richter@gmail.com>
+//   - Alban Seurat <alban.seurat@me.com>
 
-//! The stack pointer
+//! The link register
 
 use register::cpu::RegisterReadWrite;
 
 pub struct Reg;
 
 impl RegisterReadWrite<u64, ()> for Reg {
-    read_raw!(u64, "sp", "x");
-    write_raw!(u64, "sp", "x");
+    read_raw!(u64, "lr", "x");
+    write_raw!(u64, "lr", "x");
 }
 
-pub static SP: Reg = Reg {};
+pub static LR: Reg = Reg {};

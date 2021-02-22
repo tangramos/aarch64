@@ -1,24 +1,14 @@
-/*
- * Copyright (c) 2018 by the author(s)
- *
- * =============================================================================
- *
- * Licensed under either of
- *   - Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
- *   - MIT License (http://opensource.org/licenses/MIT)
- * at your option.
- *
- * =============================================================================
- *
- * Author(s):
- *   - Jorge Aparicio
- *   - Andre Richter <andre.o.richter@gmail.com>
- *   - Yuekai Jia <equation618@gmail.com>
- */
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+//
+// Copyright (c) 2018-2021 by the author(s)
+//
+// Author(s):
+//   - Jorge Aparicio
+//   - Andre Richter <andre.o.richter@gmail.com>
 
 //! Miscellaneous assembly instructions and functions
 
-use regs::*;
+use crate::regs::*;
 
 /// Returns the current stack pointer.
 #[inline(always)]
@@ -40,69 +30,105 @@ pub unsafe fn get_pc() -> usize {
 }
 
 /// The classic no-op
-#[inline]
+#[inline(always)]
 pub fn nop() {
-    match () {
-        #[cfg(target_arch = "aarch64")]
-        () => unsafe { llvm_asm!("nop" :::: "volatile") },
-
-        #[cfg(not(target_arch = "aarch64"))]
-        () => unimplemented!(),
+    #[cfg(target_arch = "aarch64")]
+    unsafe {
+        asm!("nop", options(nomem, nostack))
     }
+
+    #[cfg(not(target_arch = "aarch64"))]
+    unimplemented!()
 }
 
 /// Wait For Interrupt
-#[inline]
+///
+/// For more details on wfi, refer to [here](http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0802a/CIHEGBBF.html)
+#[inline(always)]
 pub fn wfi() {
-    match () {
-        #[cfg(target_arch = "aarch64")]
-        () => unsafe { llvm_asm!("wfi" :::: "volatile") },
-
-        #[cfg(not(target_arch = "aarch64"))]
-        () => unimplemented!(),
+    #[cfg(target_arch = "aarch64")]
+    unsafe {
+        asm!("wfi", options(nomem, nostack))
     }
+
+    #[cfg(not(target_arch = "aarch64"))]
+    unimplemented!()
 }
 
 /// Wait For Event
-#[inline]
+///
+/// For more details of wfe - sev pair, refer to [here](http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0802a/CIHEGBBF.html)
+#[inline(always)]
 pub fn wfe() {
-    match () {
-        #[cfg(target_arch = "aarch64")]
-        () => unsafe { llvm_asm!("wfe" :::: "volatile") },
-
-        #[cfg(not(target_arch = "aarch64"))]
-        () => unimplemented!(),
+    #[cfg(target_arch = "aarch64")]
+    unsafe {
+        asm!("wfe", options(nomem, nostack))
     }
+
+    #[cfg(not(target_arch = "aarch64"))]
+    unimplemented!()
 }
 
-/// Send Event
-#[inline]
-pub fn sev() {
-    match () {
-        #[cfg(target_arch = "aarch64")]
-        () => unsafe { llvm_asm!("sev" :::: "volatile") },
-
-        #[cfg(not(target_arch = "aarch64"))]
-        () => unimplemented!(),
+/// Send EVent.Locally
+///
+/// SEV causes an event to be signaled to the local core within a multiprocessor system.
+///
+/// For more details of wfe - sev/sevl pair, refer to [here](http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0802a/CIHEGBBF.html)
+#[inline(always)]
+pub fn sevl() {
+    #[cfg(target_arch = "aarch64")]
+    unsafe {
+        asm!("sevl", options(nomem, nostack))
     }
+
+    #[cfg(not(target_arch = "aarch64"))]
+    unimplemented!()
+}
+
+/// Send EVent.
+///
+/// SEV causes an event to be signaled to all cores within a multiprocessor system.
+///
+/// For more details of wfe - sev pair, refer to [here](http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0802a/CIHEGBBF.html)
+#[inline(always)]
+pub fn sev() {
+    #[cfg(target_arch = "aarch64")]
+    unsafe {
+        asm!("sev", options(nomem, nostack))
+    }
+
+    #[cfg(not(target_arch = "aarch64"))]
+    unimplemented!()
 }
 
 /// Exception return
 ///
-/// Will jump to wherever the corresponding link register points to, and
-/// therefore never return.
-#[inline]
+/// Will jump to wherever the corresponding link register points to, and therefore never return.
+#[inline(always)]
 pub fn eret() -> ! {
-    match () {
-        #[cfg(target_arch = "aarch64")]
-        () => unsafe {
-            llvm_asm!("eret" :::: "volatile");
-            unreachable!()
-        },
-
-        #[cfg(not(target_arch = "aarch64"))]
-        () => unimplemented!(),
+    #[cfg(target_arch = "aarch64")]
+    unsafe {
+        asm!("eret", options(nomem, nostack));
+        core::intrinsics::unreachable()
     }
+
+    #[cfg(not(target_arch = "aarch64"))]
+    unimplemented!()
+}
+
+/// Function return
+///
+/// Will jump to wherever the corresponding link register points to, and therefore never return.
+#[inline(always)]
+pub fn ret() -> ! {
+    #[cfg(target_arch = "aarch64")]
+    unsafe {
+        asm!("ret", options(nomem, nostack));
+        core::intrinsics::unreachable()
+    }
+
+    #[cfg(not(target_arch = "aarch64"))]
+    unimplemented!()
 }
 
 /// CPU id
