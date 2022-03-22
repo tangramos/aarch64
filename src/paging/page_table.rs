@@ -1,10 +1,11 @@
 //! Abstractions for page tables and page table entries.
 
+use bitflags::bitflags;
 use core::{
     fmt,
     ops::{Index, IndexMut},
 };
-use register::FieldValue;
+use tock_registers::{fields::FieldValue, register_bitfields};
 use ux::*;
 
 use super::{PageSize, PhysFrame, Size4KiB};

@@ -1,6 +1,6 @@
 use crate::{
     barrier::{dsb, isb, sealed},
-    regs::*,
+    registers::*,
 };
 use core::marker::PhantomData;
 
@@ -72,12 +72,16 @@ impl ICache {
     /// Invalidate all I-Cache to the Point of Unification in all PEs.
     #[inline]
     pub fn flush_all() {
-        unsafe { llvm_asm!("ic ialluis; dsb ish; isb":::: "volatile") };
+        unsafe {
+            core::arch::asm!("ic ialluis", "dsb ish", "isb", options(nostack));
+        }
     }
     /// Invalidate all I-Cache to the Point of Unification in the current PE.
     #[inline]
     pub fn local_flush_all() {
-        unsafe { llvm_asm!("ic iallu; dsb nsh; isb":::: "volatile") };
+        unsafe {
+            core::arch::asm!("ic iallu", "dsb nsh", "isb", options(nostack));
+        }
     }
 }
 
@@ -126,14 +130,18 @@ macro_rules! define_cache_op {
             #[inline]
             fn flush_line_op(vaddr: usize) {
                 unsafe {
-                    llvm_asm!(concat!(
+                    core::arch::asm!(
+                        concat!(
                             cache_ins!($cache),
                             " ",
                             cache_op!($flush),
                             "va",
                             cache_point!($point),
-                            ", $0"
-                        ) :: "r"(vaddr) : "memory" : "volatile");
+                            ", {vaddr}"
+                        ),
+                        vaddr = in(reg) vaddr,
+                        options(nostack)
+                    )
                 }
             }
             #[inline]

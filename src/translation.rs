@@ -1,7 +1,7 @@
 use crate::{
     addr::{PhysAddr, VirtAddr},
     paging::PhysFrame,
-    regs::*,
+    registers::*,
 };
 
 /// Address Translate (Stage 1 EL1 Read).
@@ -12,13 +12,13 @@ use crate::{
 pub fn address_translate(vaddr: usize) -> usize {
     let paddr: usize;
     unsafe {
-        llvm_asm!(
-            "at S1E1R, $1
-             mrs $0, par_el1"
-            : "=r"(paddr)
-            : "r"(vaddr)
-            :: "volatile"
-        );
+        core::arch::asm!(
+            "at S1E1R, {vaddr}",
+            "mrs {paddr}, par_el1",
+            vaddr = in(reg) vaddr,
+            paddr = out(reg) paddr,
+            options(pure, readonly)
+        )
     }
     paddr
 }
@@ -49,8 +49,14 @@ pub fn ttbr_el1_write(which: u8, frame: PhysFrame) {
 #[inline]
 pub fn ttbr_el1_read_asid(which: u8) -> (u16, PhysFrame) {
     let (asid, baddr) = match which {
-        0 => (TTBR0_EL1.get_asid(), TTBR0_EL1.get_baddr()),
-        1 => (TTBR1_EL1.get_asid(), TTBR1_EL1.get_baddr()),
+        0 => (
+            TTBR0_EL1.read(TTBR0_EL1::ASID) as u16,
+            TTBR0_EL1.get_baddr(),
+        ),
+        1 => (
+            TTBR1_EL1.read(TTBR1_EL1::ASID) as u16,
+            TTBR1_EL1.get_baddr(),
+        ),
         _ => (0, 0),
     };
     (asid, PhysFrame::containing_address(PhysAddr::new(baddr)))
@@ -73,13 +79,13 @@ pub fn invalidate_tlb_all() {
     // All stage 1 translations used at EL1, in the Inner Shareable shareability
     // domain.
     unsafe {
-        llvm_asm!(
-            "dsb ishst
-             tlbi vmalle1is
-             dsb ish
-             isb"
-            :::: "volatile"
-        );
+        core::arch::asm!(
+            "dsb ishst",
+            "tlbi vmalle1is",
+            "dsb ish",
+            "isb",
+            options(nostack)
+        )
     }
 }
 
@@ -88,13 +94,13 @@ pub fn invalidate_tlb_all() {
 pub fn local_invalidate_tlb_all() {
     // All stage 1 translations used at EL1
     unsafe {
-        llvm_asm!(
-            "dsb nshst
-             tlbi vmalle1
-             dsb nsh
-             isb"
-            :::: "volatile"
-        );
+        core::arch::asm!(
+            "dsb nshst",
+            "tlbi vmalle1",
+            "dsb nsh",
+            "isb",
+            options(nostack)
+        )
     }
 }
 
@@ -104,13 +110,13 @@ pub fn invalidate_tlb_vaddr(vaddr: VirtAddr) {
     // Translations used at EL1 for the specified address, for all ASID values,
     // in the Inner Shareable shareability domain.
     unsafe {
-        llvm_asm!(
-            "dsb ishst
-             tlbi vaae1is, $0
-             dsb ish
-             isb"
-            :: "r"(vaddr.as_u64() >> 12)
-            :: "volatile"
-        );
+        core::arch::asm!(
+            "dsb ishst",
+            "tlbi vaae1is, {vaddr}",
+            "dsb ish",
+            "isb",
+            vaddr = in(reg) vaddr.as_u64() >> 12,
+            options(nostack)
+        )
     }
 }

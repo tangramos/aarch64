@@ -1,14 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 //
-// Copyright (c) 2018-2021 by the author(s)
+// Copyright (c) 2018-2022 by the author(s)
 //
 // Author(s):
 //   - Andre Richter <andre.o.richter@gmail.com>
 
-// Borrow implementations from the pending upstream ACLE implementation until it is merged.
-// Afterwards, we'll probably just reexport them, hoping that the API doesn't change.
-//
-// https://github.com/rust-lang-nursery/stdsimd/pull/557
+//! Barrier functions.
 
 pub mod sealed {
     pub trait Dmb {
@@ -32,7 +29,7 @@ macro_rules! dmb_dsb {
                 match () {
                     #[cfg(target_arch = "aarch64")]
                     () => {
-                        asm!(concat!("DMB ", stringify!($A)), options(nostack))
+                        core::arch::asm!(concat!("DMB ", stringify!($A)), options(nostack))
                     }
 
                     #[cfg(not(target_arch = "aarch64"))]
@@ -46,7 +43,7 @@ macro_rules! dmb_dsb {
                 match () {
                     #[cfg(target_arch = "aarch64")]
                     () => {
-                        asm!(concat!("DSB ", stringify!($A)), options(nostack))
+                        core::arch::asm!(concat!("DSB ", stringify!($A)), options(nostack))
                     }
 
                     #[cfg(not(target_arch = "aarch64"))]
@@ -90,7 +87,7 @@ impl sealed::Isb for SY {
         match () {
             #[cfg(target_arch = "aarch64")]
             () => {
-                asm!("ISB SY", options(nostack))
+                core::arch::asm!("ISB SY", options(nostack))
             }
 
             #[cfg(not(target_arch = "aarch64"))]

@@ -2,9 +2,9 @@
 
 use crate::{
     paging::page_table::{PageTableAttribute, MEMORY_ATTRIBUTE},
-    regs::*,
+    registers::*,
 };
-use register::FieldValue;
+use tock_registers::fields::FieldValue;
 
 pub trait MairType {
     const INDEX: u64;
