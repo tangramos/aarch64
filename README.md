@@ -1,15 +1,10 @@
-[![crates.io](https://img.shields.io/crates/d/cortex-a.svg)](https://crates.io/crates/cortex-a)
-[![crates.io](https://img.shields.io/crates/v/cortex-a.svg)](https://crates.io/crates/cortex-a)
-
 # aarch64
 
 Low level access to Cortex-A 64-bit processors.
 
-Used by [rCore](https://github.com/rcore-os/rCore).
+Most functions are based on [rust-embedded/cortex-a](https://github.com/rust-embedded/cortex-a) or modified from [rcore-os/aarch64](https://github.com/rcore-os/aarch64).
 
-## Minimum Supported Rust Version
-
-Requires rustc 1.45.0 or later due to use of the new `asm!()` syntax.
+Only tested with `nightly-2022-03-17` toolchain.
 
 ## Usage
 
